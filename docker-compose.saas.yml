@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: kaogong-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kaogong
+      POSTGRES_USER: kaogong
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kaogong"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - kaogong-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: kaogong-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - kaogong-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.saas
+    container_name: kaogong-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 8080
+      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgresql://kaogong:${POSTGRES_PASSWORD:-change_this_password}@postgres:5432/kaogong
+      REDIS_URL: redis://redis:6379
+      STEPFUN_API_KEY: ${STEPFUN_API_KEY}
+      FEISHU_APP_ID: ${FEISHU_APP_ID}
+      FEISHU_APP_SECRET: ${FEISHU_APP_SECRET}
+      FEISHU_BOT_TOKEN: ${FEISHU_BOT_TOKEN}
+      FEISHU_VERIFICATION_TOKEN: ${FEISHU_VERIFICATION_TOKEN}
+      BOT_NAME: ${BOT_NAME:-考公学习伴侣}
+      DAILY_TASK_TIME: ${DAILY_TASK_TIME:-08:00}
+      WEEKLY_REPORT_DAY: ${WEEKLY_REPORT_DAY:-Monday}
+      WEEKLY_REPORT_TIME: ${WEEKLY_REPORT_TIME:-09:00}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - kaogong-network
+    # 开发时开启热重载
+    # command: npm run dev
+
+  # 可选：管理后台（React/Vue）
+  # admin:
+  #   build:
+  #     context: ./admin
+  #   container_name: kaogong-admin
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - kaogong-network
+
+networks:
+  kaogong-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

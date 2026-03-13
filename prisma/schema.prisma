@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int              @id @default(autoincrement())
+  open_id            String           @unique
+  name               String
+  target_region      String?
+  exam_type          String           // 国考/省考/事业单位
+  target_score_xingce Int
+  target_score_shenlun Int
+  exam_date          DateTime?
+  level              Int              @default(1)
+  total_points       Int              @default(0)
+  streak             Int              @default(0)
+  status             String           @default("active") // active/completed/dropped
+  registered_at      DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+  
+  tasks              DailyTask[]
+  progressSnapshots  ProgressSnapshot[]
+  
+  @@index([open_id])
+  @@index([status])
+  @@index([exam_date])
+}
+
+model DailyTask {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int
+  task_date           DateTime
+  task_type           String?          // 行测/申论/常识
+  knowledge_point     String
+  question_content    Text
+  options             Json?            // 选项数组
+  correct_answer      String
+  user_answer         String?
+  is_correct          Boolean?
+  time_spent_seconds  Int?
+  points_available    Int
+  points_earned       Int              @default(0)
+  status              String           @default("pending") // pending/completed/expired
+  created_at          DateTime         @default(now())
+  
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@unique([user_id, task_date, knowledge_point])
+  @@index([user_id, task_date])
+  @@index([user_id, status])
+  @@index([knowledge_point])
+}
+
+model ProgressSnapshot {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int
+  snapshot_date       DateTime
+  knowledge_point     String
+  total_questions     Int              @default(0)
+  correct_count       Int              @default(0)
+  accuracy            Decimal?         @db.Decimal(5, 2)
+  estimated_score     Decimal?         @db.Decimal(5, 2)
+  module_scores       Json?            // {"数量关系": 68, ...}
+  streak_days         Int              @default(0)
+  level               Int              @default(1)
+  total_points        Int              @default(0)
+  created_at          DateTime         @default(now())
+  
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@unique([user_id, snapshot_date, knowledge_point])
+  @@index([user_id, snapshot_date])
+  @@index([knowledge_point])
+}
+
+model QuestionBank {
+  id                  Int              @id @default(autoincrement())
+  question_id         String           @unique
+  type                String           @default("choice") // choice/short_answer/reading
+  content             Text
+  options             Json?            // 选项数组
+  correct_answer      String
+  explanation         Text?
+  knowledge_point     String
+  difficulty          String           @default("medium") // easy/medium/hard
+  source              String?          // "现成题库" 或 "AI生成-2025-01-15"
+  created_at          DateTime         @default(now())
+  
+  @@index([knowledge_point, difficulty])
+  @@index([question_id])
+}
+
+model KnowledgePoint {
+  id                          Int              @id @default(autoincrement())
+  name                       String           @unique // "数量关系-工程问题"
+  module                     String           // 所属模块
+  category                   String?          // 分类
+  description                String?
+  difficulty_levels          Json             // ["easy", "medium", "hard"]
+  estimated_questions_needed Int              @default(30)
+  weight                     Decimal?         @db.Decimal(3, 2) // 在总分中的权重
+  created_at                 DateTime         @default(now())
+  
+  @@index([module])
+}
+
+model Achievement {
+  id                String           @id
+  name              String
+  description       String
+  icon              String
+  condition_type    String           // streak/accuracy/points/etc
+  condition_value   Int
+  reward_points     Int
+  created_at        DateTime         @default(now())
+}
+
+model UserAchievement {
+  id                Int              @id @default(autoincrement())
+  user_id           Int
+  achievement_id    String
+  unlocked_at       DateTime         @default(now())
+  
+  user              User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  achievement       Achievement      @relation(fields: [achievement_id], references: [id], onDelete: Cascade)
+  
+  @@unique([user_id, achievement_id])
+}
