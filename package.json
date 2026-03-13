@@ -1,34 +1,19 @@
 {
   "name": "kaogong-agent",
   "version": "2.0.0-saas",
-  "description": "考公学习伴侣 - SaaS托管服务版，像多邻国一样的AI公务员考试备考助手",
-  "main": "server.saas.js",
   "scripts": {
     "start": "node server.saas.js",
     "dev": "nodemon server.saas.js",
+    "test": "jest --coverage",
+    "test:unit": "jest tests/unit --coverage",
+    "test:integration": "jest tests/integration",
+    "test:watch": "jest --watch",
     "setup": "python scripts/init_db.py",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
-    "prisma:studio": "prisma studio",
-    "test": "pytest tests/",
-    "test:unit": "pytest tests/unit/",
-    "test:integration": "pytest tests/integration/",
-    "lint": "eslint . --ext .js",
     "docker:build": "docker build -f Dockerfile.saas -t kaogong-agent .",
-    "docker:run": "docker-compose -f docker-compose.saas.yml up -d",
-    "docker:stop": "docker-compose -f docker-compose.saas.yml down"
+    "docker:run": "docker-compose -f docker-compose.saas.yml up -d"
   },
-  "keywords": [
-    "openclaw",
-    "agent",
-    "civil-service-exam",
-    "education",
-    "ai",
-    "learning-assistant",
-    "saas"
-  ],
-  "author": "Sophie Miao",
-  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
     "prisma": "^5.0.0",
@@ -37,24 +22,15 @@
     "node-fetch": "^3.3.2",
     "jsonwebtoken": "^9.0.2",
     "crypto": "^1.0.1",
-    "openclaw": "^1.0.0"
+    "openclaw": "^1.0.0",
+    "qdrant": "^1.7.0",
+    "natural": "^6.8.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.0",
     "eslint": "^8.0.0",
-    "pytest": "^7.0.0",
-    "prisma-erd-generator": "^1.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "python": ">=3.9"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/sophieMiao/Gongkao.git"
-  },
-  "bugs": {
-    "url": "https://github.com/sophieMiao/Gongkao/issues"
-  },
-  "homepage": "https://github.com/sophieMiao/Gongkao#readme"
+    "jest": "^29.7.0",
+    "@babel/preset-env": "^7.23.0",
+    "babel-jest": "^29.7.0"
+  }
 }
