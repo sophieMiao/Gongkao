@@ -1,0 +1,47 @@
+{
+  "name": "cangkou-agent",
+  "version": "1.0.0",
+  "description": "基于OpenClaw的AI公务员考试学习伴侣，像多邻国一样每日推送任务",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "setup": "python scripts/setup_bitable.py",
+    "test": "pytest tests/",
+    "test:unit": "pytest tests/unit/",
+    "test:integration": "pytest tests/integration/",
+    "lint": "eslint skills/",
+    "docker:build": "docker build -t cangkou-agent .",
+    "docker:run": "docker run -d -p 8080:8080 --env-file .env cangkou-agent"
+  },
+  "keywords": [
+    "openclaw",
+    "agent",
+    "civil-service-exam",
+    "education",
+    "ai",
+    "learning-assistant"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "openclaw": "^1.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0",
+    "eslint": "^8.0.0",
+    "pytest": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/cangkou-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/cangkou-agent/issues"
+  },
+  "homepage": "https://github.com/yourusername/cangkou-agent#readme"
+}

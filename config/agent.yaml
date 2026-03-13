@@ -1,0 +1,143 @@
+version: "1.0"
+
+agent:
+  name: "考公学习伴侣"
+  description: "基于AI的公务员考试智能备考助手，提供每日个性化学习任务"
+  timezone: "Asia/Shanghai"
+  
+  # 每日任务推送时间
+  daily_task_time: "08:00"
+  
+  # 休息日设置（每周几不推送任务）
+  rest_day: null  # 可设置如 "Sunday" 或 null 表示每天
+  
+  # 评估标准
+  assessment:
+    # 知识点掌握阈值（正确率）
+    mastery_threshold: 0.8
+    
+    # 连续达标天数要求
+    consecutive_days_required: 7
+    
+    # 每日最少学习时长（分钟）
+    min_daily_time: 10
+    
+    # 预估分数计算：最近N次答题的加权平均
+    recent_questions_count: 50
+    
+  # 游戏化配置
+  gamification:
+    # 积分规则
+    points:
+      base: 10           # 答对1题基础积分
+      difficulty_multiplier:  # 难度加成
+        easy: 1.0
+        medium: 1.2
+        hard: 1.5
+      streak_multiplier: 1.1  # 连续学习加成（每天递增，上限2.0）
+      speed_bonus: 5      # 快速答题奖励（秒数<平均时间的50%）
+    
+    # 等级系统
+    levels:
+      thresholds: [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5000, 6000]
+      # 升级奖励
+      rewards:
+        unlocked_achievements: true
+        extra_lives: false
+    
+  # AI生成题目配置
+  ai_generator:
+    enabled: true
+    provider: "stepfun"
+    api_key_env: "STEPFUN_API_KEY"
+    model: "step-3.5-flash"
+    
+    # 每天最多生成题数（控制成本）
+    max_generate_per_day: 20
+    
+    # 生成策略
+    strategies:
+      - "knowledge_gap"     # 知识点薄弱环节生成
+      - "variation"         # 旧题变体
+      - "practice"          # 按需生成
+    
+  # 数据存储配置
+  database:
+    primary: "feishu_bitable"
+    
+    # 飞书多维表格配置
+    feishu_bitable:
+      app_token_env: "BITABLE_APP_TOKEN"
+      tables:
+        users: "USERS_TABLE_ID"
+        tasks: "TASKS_TABLE_ID"
+        progress: "PROGRESS_TABLE_ID"
+        knowledge: "KNOWLEDGE_TABLE_ID"
+        questions: "QUESTIONS_TABLE_ID"
+    
+    # 备选：SQLite
+    sqlite:
+      path: "data/cangkou.db"
+  
+  # 通知配置
+  notification:
+    # 推送渠道：feishu, email, both
+    channel: "feishu"
+    
+    # 每日任务卡片样式
+    card_style: "modern"  # modern, simple
+    
+    # 周报设置
+    weekly_report:
+      enabled: true
+      day: "Monday"
+      time: "09:00"
+      
+    # 成就解锁通知
+    achievement_notification: true
+  
+  # 学习内容配置
+  curriculum:
+    # 行测模块权重（总分100）
+    xingce_weights:
+      quantity_relation: 15    # 数量关系
+      reasoning: 15           # 判断推理
+     言语理解: 30             # 言语理解
+     常识判断: 20             # 常识判断
+     资料分析: 20             # 资料分析
+    
+    # 申论配置
+    shenlun:
+      enabled: true
+      weekly_tasks: 2  # 每周申论任务数
+      min_word_count: 800
+      
+    # 知识点覆盖要求（掌握这些才能算达标）
+    required_knowledge_points:
+      - "数量关系-工程问题"
+      - "数量关系-行程问题"
+      - "判断推理-图形推理"
+      - "判断推理-逻辑判断"
+      - "言语理解-选词填空"
+      - "言语理解-片段阅读"
+      - "资料分析-速算技巧"
+      - "常识判断-时政热点"
+  
+  # 分数线参考（用于制定目标）
+  score_references:
+    # 历年国考行测分数线（分地区/岗位类型）
+    guokao:
+      central: 65    # 中央机关
+      provincial: 60 # 省级
+      municipal: 55  # 市县级
+      
+    # 省考分数线
+    shengkao:
+      tier1: 60      # 发达地区
+      tier2: 55      # 中等地区
+      tier3: 50      # 欠发达地区
+      
+    # 申论分数线（国考/省考）
+    shenlun:
+      average: 55
+      excellent: 65

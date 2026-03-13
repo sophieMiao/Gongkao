@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  cangkou-agent:
+    build: .
+    container_name: cangkou-agent
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - STEPFUN_API_KEY=${STEPFUN_API_KEY}
+      - FEISHU_APP_ID=${FEISHU_APP_ID}
+      - FEISHU_APP_SECRET=${FEISHU_APP_SECRET}
+      - BITABLE_APP_TOKEN=${BITABLE_APP_TOKEN}
+      - USERS_TABLE_ID=${USERS_TABLE_ID}
+      - TASKS_TABLE_ID=${TASKS_TABLE_ID}
+      - PROGRESS_TABLE_ID=${PROGRESS_TABLE_ID}
+      - KNOWLEDGE_TABLE_ID=${KNOWLEDGE_TABLE_ID}
+      - OPENCLAW_GATEWAY_URL=${OPENCLAW_GATEWAY_URL:-http://localhost:8080}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {if(r.statusCode!==200)throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cangkou-network
+
+networks:
+  cangkou-network:
+    driver: bridge

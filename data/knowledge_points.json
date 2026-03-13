@@ -1,0 +1,128 @@
+{
+  "knowledge_points": [
+    {
+      "id": "kp_001",
+      "name": "数量关系-工程问题",
+      "module": "数量关系",
+      "category": "工程问题",
+      "description": "涉及工作量、效率、合作时间等计算",
+      "difficulty_levels": ["easy", "medium", "hard"],
+      "estimated_questions_needed": 30,
+      "common_formulas": [
+        "工作量=效率×时间",
+        "合作效率=效率之和",
+        "效率=1/完成时间"
+      ],
+      "learning_path": ["基础概念", "单一工程", "多人合作", "交替合作", "配套问题"]
+    },
+    {
+      "id": "kp_002",
+      "name": "数量关系-行程问题",
+      "module": "数量关系",
+      "category": "行程问题",
+      "description": "涉及速度、时间、距离的计算及相遇追及问题",
+      "difficulty_levels": ["easy", "medium", "hard"],
+      "estimated_questions_needed": 25,
+      "common_formulas": [
+        "距离=速度×时间",
+        "相遇距离=速度和×时间",
+        "追及距离=速度差×时间"
+      ],
+      "learning_path": ["基础公式", "相遇问题", "追及问题", "流水行船", "变速运动"]
+    },
+    {
+      "id": "kp_003",
+      "name": "判断推理-图形推理",
+      "module": "判断推理",
+      "category": "图形推理",
+      "description": "根据图形排列规律推理出缺失图形",
+      "difficulty_levels": ["easy", "medium", "hard"],
+      "estimated_questions_needed": 40,
+      "common_patterns": [
+        "位置规律：平移、旋转、翻转",
+        "样式规律：遍历、加减同异",
+        "数量规律：点线面、角数、相交"
+      ],
+      "learning_path": ["位置类", "样式类", "数量类", "属性类", "综合推理"]
+    },
+    {
+      "id": "kp_004",
+      "name": "判断推理-逻辑判断",
+      "module": "判断推理",
+      "category": "逻辑判断",
+      "description": "三段论、前提假设、解释评价、翻译推理等",
+      "difficulty_levels": ["medium", "hard"],
+      "estimated_questions_needed": 35,
+      "common_types": [
+        "必要条件推理",
+        "三段论推理",
+        "加强削弱论证"
+      ],
+      "learning_path": ["概念与逻辑词", "命题推理", "三段论", "论证分析"]
+    },
+    {
+      "id": "kp_005",
+      "name": "言语理解-选词填空",
+      "module": "言语理解",
+      "category": "选词填空",
+      "description": "根据语境选择恰当的词语填入空白处",
+      "difficulty_levels": ["easy", "medium", "hard"],
+      "estimated_questions_needed": 30,
+      "key_skills": [
+        "近义词辨析",
+        "成语使用",
+        "语境分析",
+        "感情色彩匹配"
+      ],
+      "learning_path": ["实词辨析", "成语运用", "虚词填空", "综合应用"]
+    },
+    {
+      "id": "kp_006",
+      "name": "言语理解-片段阅读",
+      "module": "言语理解",
+      "category": "片段阅读",
+      "description": "阅读理解短文并回答问题",
+      "difficulty_levels": ["easy", "medium", "hard"],
+      "estimated_questions_needed": 35,
+      "question_types": [
+        "主旨概括",
+        "意图判断",
+        "细节查找",
+        "词句理解"
+      ],
+      "learning_path": ["找主旨", "析意图", "辨细节", "断词义"]
+    },
+    {
+      "id": "kp_007",
+      "name": "资料分析-速算技巧",
+      "module": "资料分析",
+      "category": "速算技巧",
+      "description": "快速处理大量数据，进行加减乘除运算",
+      "difficulty_levels": ["easy", "medium"],
+      "estimated_questions_needed": 25,
+      "techniques": [
+        "截位直除",
+        "百化分",
+        "增长率快速判断",
+        "基期与现期互推"
+      ],
+      "learning_path": ["增长率", "比重", "倍数", "平均量"]
+    },
+    {
+      "id": "kp_008",
+      "name": "常识判断-时政热点",
+      "module": "常识判断",
+      "category": "时政热点",
+      "description": "国家大政方针、重要会议精神、法律法规更新",
+      "difficulty_levels": ["easy", "medium"],
+      "estimated_questions_needed": 20,
+      "topics": [
+        "中央重要会议",
+        "政府工作报告",
+        "重要法律法规",
+        "国际形势"
+      ],
+      "learning_path": ["年度热点", "重要会议", "政策文件", "法律更新"]
+    }
+  ]
+}
