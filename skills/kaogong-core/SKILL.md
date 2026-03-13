@@ -1,4 +1,4 @@
-# Skill: cangkou-core
+# Skill: kaogong-core
 
 ## 描述
 
@@ -67,8 +67,8 @@ Agent → 用户: 发送欢迎消息 + 第一日任务
 
 - `feishu_bitable_app_table_record` - 读写用户数据和进度
 - `feishu_im_user_message` - 发送每日任务卡片
-- `cangkou-knowledge:get_questions` - 从题库获取题目
-- `cangkou-knowledge:generate_questions` - AI生成新题
+- `kaogong-knowledge:get_questions` - 从题库获取题目
+- `kaogong-knowledge:generate_questions` - AI生成新题
 
 ## 配置
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * cangkou-knowledge Skill - 知识库管理
+ * kaogong-knowledge Skill - 知识库管理
  */
 
 const { OpenClaw } = require('openclaw');
@@ -86,8 +86,8 @@ class KnowledgeSkill {
       throw new Error(`Question ${question_id} not found`);
     }
     
-    // 更新用户进度（通过 cangkou-core）
-    // 这里只记录答题记录，实际进度更新由 cangkou-core 处理
+    // 更新用户进度（通过 kaogong-core）
+    // 这里只记录答题记录，实际进度更新由 kaogong-core 处理
     
     const knowledge_point = question.knowledge_point;
     
@@ -214,7 +214,7 @@ module.exports = {
     }
   },
   metadata: {
-    name: 'cangkou-knowledge',
+    name: 'kaogong-knowledge',
     version: '1.0.0',
     description: '考公学习伴侣知识库Skill',
     author: 'Your Name',

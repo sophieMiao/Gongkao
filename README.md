@@ -15,12 +15,12 @@
 ## 🏗️ 架构
 
 ```
-cangkou-agent/
+kaogong-agent/
 ├── skills/                    # OpenClaw Skills
-│   ├── cangkou-core/         # 核心 Agent（任务调度、评估）
-│   ├── cangkou-knowledge/    # 知识库管理（题库、知识点）
-│   ├── cangkou-notification/ # 通知推送（飞书、邮件）
-│   └── cangkou-analytics/    # 数据分析（进度报告）
+│   ├── kaogong-core/         # 核心 Agent（任务调度、评估）
+│   ├── kaogong-knowledge/    # 知识库管理（题库、知识点）
+│   ├── kaogong-notification/ # 通知推送（飞书、邮件）
+│   └── kaogong-analytics/    # 数据分析（进度报告）
 ├── data/                     # 数据文件
 │   ├── question_bank.json    # 现成题库
 │   ├── knowledge_points.json # 知识点图谱
@@ -42,8 +42,8 @@ cangkou-agent/
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/cangkou-agent.git
-cd cangkou-agent
+git clone https://github.com/yourusername/kaogong-agent.git
+cd kaogong-agent
 
 # 安装依赖
 pip install -r requirements.txt
@@ -223,7 +223,7 @@ database:
 
 ```bash
 # 初始化数据库
-sqlite3 data/cangkou.db < schema.sql
+sqlite3 data/kaogong.db < schema.sql
 ```
 
 ## 🧪 测试
@@ -245,11 +245,11 @@ python tests/simulate_user.py
 
 1. **Docker 部署**
 ```bash
-docker build -t cangkou-agent .
-docker run -d --name cangkou -p 8080:8080 \
+docker build -t kaogong-agent .
+docker run -d --name kaogong -p 8080:8080 \
   -e STEPFUN_API_KEY=your_key \
   -e BITABLE_APP_TOKEN=your_token \
-  cangkou-agent
+  kaogong-agent
 ```
 
 2. **Kubernetes**
@@ -267,7 +267,7 @@ kubectl apply -f k8s/service.yaml
 
 ```bash
 openclaw gateway start
-openclaw agent run --skill skills/cangkou-core
+openclaw agent run --skill skills/kaogong-core
 ```
 
 ## 🤝 贡献
@@ -302,8 +302,8 @@ openclaw agent run --skill skills/cangkou-core
 
 ## 📞 联系方式
 
--  Issues: [GitHub Issues](https://github.com/yourusername/cangkou-agent/issues)
--  讨论: [GitHub Discussions](https://github.com/yourusername/cangkou-agent/discussions)
+-  Issues: [GitHub Issues](https://github.com/yourusername/kaogong-agent/issues)
+-  讨论: [GitHub Discussions](https://github.com/yourusername/kaogong-agent/discussions)
 
 ---
 

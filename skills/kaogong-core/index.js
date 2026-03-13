@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * cangkou-core Skill - 考公学习伴侣核心逻辑
+ * kaogong-core Skill - 考公学习伴侣核心逻辑
  */
 
 const { OpenClaw } = require('openclaw');
@@ -301,13 +301,13 @@ function buildDailyTaskCard({ user, questions, date, totalPoints }) {
               "tag": "button",
               "text": { "content": "开始学习", "tag": "plain_text" },
               "type": "primary",
-              "url": `https://cangkou.openclaw.ai/task/${date}?user=${user.user_id}`
+              "url": `https://kaogong.openclaw.ai/task/${date}?user=${user.user_id}`
             },
             {
               "tag": "button",
               "text": { "content": "稍后提醒", "tag": "plain_text" },
               "type": "default",
-              "url": `https://cangkou.openclaw.ai/remind/${date}?user=${user.user_id}`
+              "url": `https://kaogong.openclaw.ai/remind/${date}?user=${user.user_id}`
             }
           ]
         },
@@ -391,7 +391,7 @@ module.exports = {
   
   // 元数据
   metadata: {
-    name: 'cangkou-core',
+    name: 'kaogong-core',
     version: '1.0.0',
     description: '考公学习伴侣核心Agent',
     author: 'Your Name',

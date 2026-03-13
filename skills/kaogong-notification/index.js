@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * cangkou-notification Skill - 通知推送管理
+ * kaogong-notification Skill - 通知推送管理
  */
 
 const { OpenClaw } = require('openclaw');
@@ -184,7 +184,7 @@ const CardTemplates = {
 
 class NotificationSkill {
   constructor() {
-    this.name = 'cangkou-notification';
+    this.name = 'kaogong-notification';
   }
   
   async sendDailyTaskCard(context, params) {
@@ -203,7 +203,7 @@ class NotificationSkill {
       streak,
       level,
       taskUrl,
-      remindUrl: `https://cangkou.openclaw.ai/remind?user=${user_id}&date=${new Date().toISOString().split('T')[0]}`
+      remindUrl: `https://kaogong.openclaw.ai/remind?user=${user_id}&date=${new Date().toISOString().split('T')[0]}`
     });
     
     await context.tools.feishu_im_user_message({
@@ -353,7 +353,7 @@ class NotificationSkill {
           remainingTasks: remaining,
           remainingHours: 4,  // 假设任务在20:00截止
           points: remaining * 10,
-          taskUrl: `https://cangkou.openclaw.ai/tasks/today?user=${user_id}`
+          taskUrl: `https://kaogong.openclaw.ai/tasks/today?user=${user_id}`
         });
       }
     }
@@ -418,7 +418,7 @@ module.exports = {
     }
   },
   metadata: {
-    name: 'cangkou-notification',
+    name: 'kaogong-notification',
     version: '1.0.0',
     description: '考公学习伴侣通知推送Skill',
     author: 'Your Name',

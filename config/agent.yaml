@@ -77,7 +77,7 @@ agent:
     
     # 备选：SQLite
     sqlite:
-      path: "data/cangkou.db"
+      path: "data/kaogong.db"
   
   # 通知配置
   notification:

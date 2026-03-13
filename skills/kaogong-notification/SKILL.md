@@ -1,4 +1,4 @@
-# Skill: cangkou-notification
+# Skill: kaogong-notification
 
 ## 描述
 
@@ -201,17 +201,17 @@
 cron:
   - name: "daily_task_dispatch"
     schedule: "0 8 * * *"  # 每天8:00
-    skill: "cangkou-core"
+    skill: "kaogong-core"
     method: "generate_and_send_tasks"
     
   - name: "weekly_report"
     schedule: "0 9 * * 1"  # 每周一9:00
-    skill: "cangkou-analytics"
+    skill: "kaogong-analytics"
     method: "generate_weekly_report"
     
   - name: "streak_reminder"
     schedule: "*/30 * * * *"  # 每30分钟检查未完成任务
-    skill: "cangkou-notification"
+    skill: "kaogong-notification"
     method: "check_and_remind"
 ```
 
@@ -236,10 +236,10 @@ def check_and_remind():
 
 ```bash
 # 模拟发送每日任务
-python -m skills.cangkou-notification send_daily_task --user ou_test --dry-run
+python -m skills.kaogong-notification send_daily_task --user ou_test --dry-run
 
 # 生成周报模板
-python -m skills.cangkou-notification generate_weekly_report --week last
+python -m skills.kaogong-notification generate_weekly_report --week last
 ```
 
 ## 注意事项

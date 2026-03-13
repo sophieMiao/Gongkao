@@ -1,5 +1,5 @@
 {
-  "name": "cangkou-agent",
+  "name": "kaogong-agent",
   "version": "1.0.0",
   "description": "基于OpenClaw的AI公务员考试学习伴侣，像多邻国一样每日推送任务",
   "main": "server.js",
@@ -11,8 +11,8 @@
     "test:unit": "pytest tests/unit/",
     "test:integration": "pytest tests/integration/",
     "lint": "eslint skills/",
-    "docker:build": "docker build -t cangkou-agent .",
-    "docker:run": "docker run -d -p 8080:8080 --env-file .env cangkou-agent"
+    "docker:build": "docker build -t kaogong-agent .",
+    "docker:run": "docker run -d -p 8080:8080 --env-file .env kaogong-agent"
   },
   "keywords": [
     "openclaw",
@@ -38,10 +38,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/cangkou-agent.git"
+    "url": "https://github.com/yourusername/kaogong-agent.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/cangkou-agent/issues"
+    "url": "https://github.com/yourusername/kaogong-agent/issues"
   },
-  "homepage": "https://github.com/yourusername/cangkou-agent#readme"
+  "homepage": "https://github.com/yourusername/kaogong-agent#readme"
 }

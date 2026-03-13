@@ -5,8 +5,8 @@
 ### 1. 克隆与依赖
 
 ```bash
-git clone https://github.com/yourusername/cangkou-agent.git
-cd cangkou-agent
+git clone https://github.com/yourusername/kaogong-agent.git
+cd kaogong-agent
 
 # 创建虚拟环境
 python -m venv venv
@@ -66,12 +66,12 @@ python scripts/setup_bitable.py
 openclaw gateway start
 
 # 注册你的 Skills
-openclaw skills register skills/cangkou-core
-openclaw skills register skills/cangkou-knowledge
-openclaw skills register skills/cangkou-notification
+openclaw skills register skills/kaogong-core
+openclaw skills register skills/kaogong-knowledge
+openclaw skills register skills/kaogong-notification
 
 # 启动 Agent
-openclaw agent run --skill cangkou-core
+openclaw agent run --skill kaogong-core
 ```
 
 ### 5. 测试
@@ -90,17 +90,17 @@ python tests/simulate_registration.py
 ## 项目结构
 
 ```
-cangkou-agent/
+kaogong-agent/
 ├── skills/                    # OpenClaw Skills
-│   ├── cangkou-core/         # 核心Agent逻辑
+│   ├── kaogong-core/         # 核心Agent逻辑
 │   │   ├── SKILL.md
 │   │   ├── index.js         # Node.js实现
 │   │   └── workflows/       # 工作流定义（计划中）
-│   ├── cangkou-knowledge/    # 知识库管理
+│   ├── kaogong-knowledge/    # 知识库管理
 │   │   ├── SKILL.md
 │   │   ├── index.js
 │   │   └── data/            # 题库、知识点
-│   └── cangkou-notification/ # 通知推送
+│   └── kaogong-notification/ # 通知推送
 │       ├── SKILL.md
 │       └── index.js
 ├── utils/                     # 工具模块
@@ -178,16 +178,16 @@ async def generate_more():
 
 ```bash
 # 构建镜像
-docker build -t cangkou-agent .
+docker build -t kaogong-agent .
 
 # 运行
 docker run -d \
-  --name cangkou \
+  --name kaogong \
   -p 8080:8080 \
   -e STEPFUN_API_KEY=your_key \
   -e BITABLE_APP_TOKEN=your_token \
   -e USERS_TABLE_ID=your_table_id \
-  cangkou-agent
+  kaogong-agent
 ```
 
 ### Kubernetes
@@ -207,10 +207,10 @@ docker run -d \
 
 ```bash
 # Docker
-docker logs -f cangkou
+docker logs -f kaogong
 
 # Kubernetes
-kubectl logs -f deployment/cangkou-agent
+kubectl logs -f deployment/kaogong-agent
 ```
 
 ### 数据库查询（飞书）

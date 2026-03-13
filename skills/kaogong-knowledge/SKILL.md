@@ -1,4 +1,4 @@
-# Skill: cangkou-knowledge
+# Skill: kaogong-knowledge
 
 ## 描述
 

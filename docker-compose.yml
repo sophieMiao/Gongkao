@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  cangkou-agent:
+  kaogong-agent:
     build: .
-    container_name: cangkou-agent
+    container_name: kaogong-agent
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -28,8 +28,8 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - cangkou-network
+      - kaogong-network
 
 networks:
-  cangkou-network:
+  kaogong-network:
     driver: bridge

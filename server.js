@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * cangkou-agent 主服务器
+ * kaogong-agent 主服务器
  * 集成 OpenClaw Agent 并提供 HTTP API
  */
 
@@ -118,7 +118,7 @@ function setupCronJobs() {
   // 每日任务生成与推送
   cron.schedule('0 8 * * *', async () => {
     console.log('⏰ 执行每日任务生成任务...');
-    // 这里调用 cangkou-core 的 generateAndSendDailyTask
+    // 这里调用 kaogong-core 的 generateAndSendDailyTask
     // 需要遍历所有用户
   });
   
