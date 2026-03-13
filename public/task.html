@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考公学习伴侣 - 每日任务</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 3px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #ffd700;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .content {
+      padding: 30px 20px;
+    }
+
+    .task-info {
+      margin-bottom: 30px;
+    }
+
+    .task-info h2 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .task-info .meta {
+      display: flex;
+      gap: 15px;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .task-info .meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .question-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .question-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option:hover {
+      border-color: #4facfe;
+      background: #f0f8ff;
+    }
+
+    .option.selected {
+      border-color: #4facfe;
+      background: #e6f2ff;
+    }
+
+    .option.correct {
+      border-color: #4caf50;
+      background: #e8f5e9;
+    }
+
+    .option.incorrect {
+      border-color: #f44336;
+      background: #ffebee;
+    }
+
+    .option-letter {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .option.selected .option-letter {
+      background: #4facfe;
+      color: white;
+    }
+
+    .option.correct .option-letter {
+      background: #4caf50;
+      color: white;
+    }
+
+    .option.incorrect .option-letter {
+      background: #f44336;
+      color: white;
+    }
+
+    .option-text {
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .explanation {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff8e1;
+      border-radius: 10px;
+      border-left: 4px solid #ffc107;
+      display: none;
+    }
+
+    .explanation.show {
+      display: block;
+    }
+
+    .explanation h4 {
+      color: #f57c00;
+      margin-bottom: 10px;
+    }
+
+    .explanation p {
+      color: #666;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 14px;
+      color: #999;
+      margin-top: 10px;
+    }
+
+    .timer span {
+      color: #4facfe;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+      font-size: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      .header {
+        padding: 20px 15px;
+      }
+      .content {
+        padding: 20px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 考公学习伴侣</h1>
+      <div class="subtitle">第 <span id="day-number">1</span> 天任务</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="task-info">
+        <h2 id="knowledge-point">数量关系-工程问题</h2>
+        <div class="meta">
+          <span>⏱️ 预计 <span id="estimated-time">5</span> 分钟</span>
+          <span>💎 <span id="points">15</span> 积分</span>
+          <span>🔥 连续 <span id="streak">0</span> 天</span>
+        </div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-text" id="question-content">
+          甲乙合作完成一项工程需要10天，甲单独做需要15天，乙单独做需要多少天？
+        </div>
+        <div class="options" id="options">
+          <!-- 选项将通过 JS 动态生成 -->
+        </div>
+      </div>
+
+      <div class="timer">
+        用时：<span id="timer">0</span> 秒
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="skipQuestion()">跳过</button>
+        <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">提交答案</button>
+      </div>
+
+      <div class="explanation" id="explanation">
+        <h4>📖 解析</h4>
+        <p id="explanation-text"></p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>考公学习伴侣 · 让每一天都有进步</p>
+    </div>
+  </div>
+
+  <script>
+    // 全局状态
+    let currentTask = null;
+    let selectedOption = null;
+    let startTime = null;
+    let timerInterval = null;
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const taskId = urlParams.get('task_id');
+      const userId = urlParams.get('user');
+      
+      if (!taskId || !userId) {
+        alert('缺少任务参数');
+        window.close();
+        return;
+      }
+
+      await loadTask(taskId, userId);
+      startTimer();
+    });
+
+    // 加载任务详情
+    async function loadTask(taskId, userId) {
+      try {
+        const response = await fetch(`/api/v1/tasks/${taskId}?user_id=${userId}`);
+        if (!response.ok) {
+          throw new Error('Failed to load task');
+        }
+        
+        const data = await response.json();
+        currentTask = data;
+        
+        // 渲染题目
+        document.getElementById('day-number').textContent = data.day_number || 1;
+        document.getElementById('knowledge-point').textContent = data.knowledge_point;
+        document.getElementById('estimated-time').textContent = data.estimated_minutes || 5;
+        document.getElementById('points').textContent = data.points_available;
+        document.getElementById('streak').textContent = data.streak || 0;
+        document.getElementById('question-content').textContent = data.content;
+        
+        // 渲染选项
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+        
+        const letters = ['A', 'B', 'C', 'D'];
+        data.options.forEach((opt, idx) => {
+          const optionEl = document.createElement('div');
+          optionEl.className = 'option';
+          optionEl.dataset.letter = letters[idx];
+          optionEl.dataset.value = opt; // 假设选项就是答案值
+          optionEl.innerHTML = `
+            <div class="option-letter">${letters[idx]}</div>
+            <div class="option-text">${opt}</div>
+          `;
+          optionEl.onclick = () => selectOption(optionEl);
+          optionsContainer.appendChild(optionEl);
+        });
+        
+      } catch (error) {
+        console.error('加载任务失败:', error);
+        alert('加载任务失败，请重试');
+      }
+    }
+
+    // 选择选项
+    function selectOption(optionEl) {
+      // 清除之前的选择
+      document.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      optionEl.classList.add('selected');
+      selectedOption = optionEl.dataset.letter;
+    }
+
+    // 提交答案
+    async function submitAnswer() {
+      if (!selectedOption) {
+        alert('请选择答案');
+        return;
+      }
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const taskId = urlParams.get('task_id');
+      const userId = urlParams.get('user');
+      
+      const response = await fetch(`/api/v1/tasks/${taskId}/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_answer: selectedOption,
+          time_spent_seconds: Math.floor((Date.now() - startTime) / 1000)
+        })
+      });
+      
+      if (!response.ok) {
+        alert('提交失败，请重试');
+        return;
+      }
+      
+      const result = await response.json();
+      
+      // 显示结果
+      showResult(result);
+    }
+
+    // 显示答题结果
+    function showResult(result) {
+      const options = document.querySelectorAll('.option');
+      const correctAnswer = currentTask.correct_answer;
+      
+      // 标记正确/错误
+      options.forEach(opt => {
+        if (opt.dataset.value === correctAnswer) {
+          opt.classList.add('correct');
+        } else if (opt.dataset.letter === result.user_answer && !result.correct) {
+          opt.classList.add('incorrect');
+        }
+      });
+      
+      // 显示解析
+      const explanationEl = document.getElementById('explanation');
+      const explanationText = document.getElementById('explanation-text');
+      explanationText.textContent = result.explanation || '暂无解析';
+      explanationEl.classList.add('show');
+      
+      // 禁用提交按钮
+      document.getElementById('submit-btn').disabled = true;
+      
+      // 更新进度条
+      updateProgress();
+      
+      // 停止计时
+      clearInterval(timerInterval);
+    }
+
+    // 跳过题目
+    function skipQuestion() {
+      if (confirm('确定要跳过这道题吗？将不会获得积分。')) {
+        // 直接标记为完成，不计分
+        // TODO: 调用 skip API
+        alert('已跳过');
+        window.close();
+      }
+    }
+
+    // 计时器
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const seconds = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('timer').textContent = seconds;
+      }, 1000);
+    }
+
+    // 更新进度
+    async function updateProgress() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('user');
+      
+      // 重新获取任务列表以更新进度条
+      // TODO: 实现
+    }
+  </script>
+</body>
+</html>
