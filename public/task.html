@@ -222,6 +222,18 @@
       border-radius: 10px;
       border-left: 4px solid #ffc107;
       display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .explanation.show {
@@ -231,12 +243,132 @@
     .explanation h4 {
       color: #f57c00;
       margin-bottom: 10px;
+      font-size: 16px;
     }
 
     .explanation p {
       color: #666;
       line-height: 1.6;
       font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .explanation .section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px dashed #ffc107;
+    }
+
+    .explanation .section-title {
+      font-weight: bold;
+      color: #f57c00;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .knowledge-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .knowledge-tag {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .similar-questions {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f3e5f5;
+      border-radius: 8px;
+    }
+
+    .similar-questions p {
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .btn-small {
+      display: inline-block;
+      padding: 6px 12px;
+      background: #fff;
+      border: 1px solid #9c27b0;
+      color: #9c27b0;
+      border-radius: 15px;
+      font-size: 12px;
+      text-decoration: none;
+      margin-right: 8px;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+
+    .btn-small:hover {
+      background: #9c27b0;
+      color: white;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: space-around;
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #4facfe;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    .flip-card {
+      perspective: 1000px;
+      margin-bottom: 20px;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: left;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .flip-card-back {
+      transform: rotateY(180deg);
+      background: #fff8e1;
     }
 
     .timer {
@@ -284,6 +416,21 @@
     </div>
 
     <div class="content">
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-value" id="today-progress">1/10</div>
+          <div class="stat-label">今日进度</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="accuracy-rate">--%</div>
+          <div class="stat-label">正确率</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="knowledge-mastery">--%</div>
+          <div class="stat-label">本知识点掌握度</div>
+        </div>
+      </div>
+
       <div class="task-info">
         <h2 id="knowledge-point">数量关系-工程问题</h2>
         <div class="meta">
@@ -293,12 +440,29 @@
         </div>
       </div>
 
-      <div class="question-card">
-        <div class="question-text" id="question-content">
-          甲乙合作完成一项工程需要10天，甲单独做需要15天，乙单独做需要多少天？
-        </div>
-        <div class="options" id="options">
-          <!-- 选项将通过 JS 动态生成 -->
+      <div class="flip-card" id="question-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="question-text" id="question-content">
+              甲乙合作完成一项工程需要10天，甲单独做需要15天，乙单独做需要多少天？
+            </div>
+            <div class="options" id="options">
+              <!-- 选项将通过 JS 动态生成 -->
+            </div>
+          </div>
+          <div class="flip-card-back">
+            <h4>📖 解析</h4>
+            <div id="explanation-content">
+              <!-- 解析内容 -->
+            </div>
+            <div class="knowledge-tags" id="knowledge-tags">
+              <!-- 知识点标签 -->
+            </div>
+            <div class="similar-questions" id="similar-questions" style="display: none;">
+              <p><strong>💡 同类题推荐</strong></p>
+              <div id="similar-list"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -309,11 +473,7 @@
       <div class="actions">
         <button class="btn btn-secondary" onclick="skipQuestion()">跳过</button>
         <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">提交答案</button>
-      </div>
-
-      <div class="explanation" id="explanation">
-        <h4>📖 解析</h4>
-        <p id="explanation-text"></p>
+        <button class="btn btn-secondary" id="next-btn" onclick="nextQuestion()" style="display: none;">下一题</button>
       </div>
     </div>
 
@@ -343,6 +503,7 @@
 
       await loadTask(taskId, userId);
       startTimer();
+      updateProgressDisplay();
     });
 
     // 加载任务详情
@@ -363,6 +524,9 @@
         document.getElementById('points').textContent = data.points_available;
         document.getElementById('streak').textContent = data.streak || 0;
         document.getElementById('question-content').textContent = data.content;
+        
+        // 更新进度显示
+        document.getElementById('today-progress').textContent = `${data.completed_tasks || 0}/${data.total_tasks || 10}`;
         
         // 渲染选项
         const optionsContainer = document.getElementById('options');
@@ -385,6 +549,52 @@
       } catch (error) {
         console.error('加载任务失败:', error);
         alert('加载任务失败，请重试');
+      }
+    }
+
+    // 更新进度显示
+    async function updateProgressDisplay() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('user');
+      
+      try {
+        const response = await fetch(`/api/v1/users/${userId}/progress?date=${new Date().toISOString().split('T')[0]}`);
+        if (response.ok) {
+          const data = await response.json();
+          
+          // 更新今日进度
+          const todayProgress = document.getElementById('today-progress');
+          if (todayProgress) {
+            todayProgress.textContent = `${data.completed_tasks || 0}/${data.total_tasks || 10}`;
+          }
+          
+          // 更新正确率
+          const accuracyRate = document.getElementById('accuracy-rate');
+          if (accuracyRate) {
+            accuracyRate.textContent = data.accuracy ? `${Math.round(data.accuracy * 100)}%` : '--%';
+          }
+          
+          // 更新知识点掌握度（取当前知识点的正确率）
+          const knowledgeMastery = document.getElementById('knowledge-mastery');
+          const currentKp = currentTask?.knowledge_point;
+          if (knowledgeMastery && currentKp && data.knowledge_point_accuracy?.[currentKp]) {
+            const accuracy = data.knowledge_point_accuracy[currentKp];
+            knowledgeMastery.textContent = `${Math.round(accuracy * 100)}%`;
+            
+            // 根据掌握度改变颜色
+            if (accuracy >= 0.8) {
+              knowledgeMastery.style.color = '#4caf50';
+            } else if (accuracy >= 0.6) {
+              knowledgeMastery.style.color = '#ff9800';
+            } else {
+              knowledgeMastery.style.color = '#f44336';
+            }
+          } else if (knowledgeMastery) {
+            knowledgeMastery.textContent = '--%';
+          }
+        }
+      } catch (error) {
+        console.error('获取进度失败:', error);
       }
     }
 
@@ -430,8 +640,9 @@
       showResult(result);
     }
 
-    // 显示答题结果
+    // 显示答题结果（翻转卡片）
     function showResult(result) {
+      const card = document.getElementById('question-card');
       const options = document.querySelectorAll('.option');
       const correctAnswer = currentTask.correct_answer;
       
@@ -444,20 +655,57 @@
         }
       });
       
-      // 显示解析
-      const explanationEl = document.getElementById('explanation');
-      const explanationText = document.getElementById('explanation-text');
-      explanationText.textContent = result.explanation || '暂无解析';
-      explanationEl.classList.add('show');
+      // 显示解析内容（在卡片背面）
+      const explanationContent = document.getElementById('explanation-content');
+      let html = '';
       
-      // 禁用提交按钮
-      document.getElementById('submit-btn').disabled = true;
+      if (result.correct) {
+        html += `<p style="color: #4caf50; font-weight: bold; margin-bottom: 10px;">✅ 回答正确！${result.points_earned > 0 ? '获得'+result.points_earned+'积分' : ''}</p>`;
+      } else {
+        html += `<p style="color: #f44336; font-weight: bold; margin-bottom: 10px;">❌ 回答错误</p>`;
+        html += `<p><strong>正确答案：</strong>${correctAnswer}</p>`;
+        html += `<p><strong>你的答案：</strong>${result.user_answer}</p>`;
+      }
       
-      // 更新进度条
-      updateProgress();
+      html += `<div class="section"><div class="section-title">📖 详细解析</div><p>${result.explanation || '暂无解析'}</p></div>`;
+      
+      // 知识点标签
+      if (result.knowledge_points && result.knowledge_points.length > 0) {
+        html += `<div class="section"><div class="section-title">🔗 相关知识点</div><div class="knowledge-tags">`;
+        result.knowledge_points.forEach(kp => {
+          html += `<span class="knowledge-tag">${kp}</span>`;
+        });
+        html += `</div></div>`;
+      }
+      
+      // 同类题推荐
+      if (result.similar_questions && result.similar_questions.length > 0) {
+        html += `<div class="similar-questions"><p><strong>💡 同类题推荐</strong></p><div id="similar-list">`;
+        result.similar_questions.forEach((sq, idx) => {
+          html += `<a href="javascript:void(0)" class="btn-small" onclick="loadSimilarQuestion(${sq.id})">第${idx + 1}题（${sq.difficulty}）</a>`;
+        });
+        html += `</div></div>`;
+      }
+      
+      explanationContent.innerHTML = html;
+      
+      // 翻转卡片显示背面
+      card.classList.add('flipped');
+      
+      // 更新按钮状态
+      document.getElementById('submit-btn').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'inline-block';
       
       // 停止计时
       clearInterval(timerInterval);
+      
+      // 更新全局进度
+      updateProgressDisplay();
+    }
+
+    // 加载同类题（待实现）
+    function loadSimilarQuestion(similarId) {
+      alert('同类题功能开发中...');
     }
 
     // 跳过题目
@@ -470,6 +718,24 @@
       }
     }
 
+    // 下一题
+    function nextQuestion() {
+      // 获取当前任务总数和已完成数，判断是否还有下一题
+      const progressText = document.getElementById('today-progress').textContent;
+      const [completed, total] = progressText.split('/').map(Number);
+      
+      if (completed < total) {
+        // 刷新页面或加载下一个任务ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user');
+        // TODO: 获取下一个任务ID
+        window.location.reload();
+      } else {
+        alert('今日任务已完成！明天继续加油！');
+        window.close();
+      }
+    }
+
     // 计时器
     function startTimer() {
       startTime = Date.now();
@@ -477,15 +743,6 @@
         const seconds = Math.floor((Date.now() - startTime) / 1000);
         document.getElementById('timer').textContent = seconds;
       }, 1000);
-    }
-
-    // 更新进度
-    async function updateProgress() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const userId = urlParams.get('user');
-      
-      // 重新获取任务列表以更新进度条
-      // TODO: 实现
     }
   </script>
 </body>

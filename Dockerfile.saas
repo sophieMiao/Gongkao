@@ -60,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 EXPOSE 8080
 
 # 启动命令
-CMD ["node", "server.saas.js"]
+CMD ["node", "server-updated.js"]

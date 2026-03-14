@@ -48,6 +48,9 @@ model DailyTask {
   time_spent_seconds  Int?
   points_available    Int
   points_earned       Int              @default(0)
+  explanation         Text?            // 详细解析
+  knowledge_tags      Json?            // ["中心理解", "关键词法"]
+  similar_questions   Json?            // [{id, difficulty, ...}]
   status              String           @default("pending") // pending/completed/expired
   created_at          DateTime         @default(now())
   
