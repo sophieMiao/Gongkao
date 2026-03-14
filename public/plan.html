@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考公学习伴侣 - 备考计划</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 { font-size: 28px; margin-bottom: 10px; }
+    .header .subtitle { font-size: 16px; opacity: 0.9; }
+    
+    .progress-overview {
+      display: flex;
+      justify-content: space-around;
+      background: #f8f9fa;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+    }
+    .overview-item {
+      text-align: center;
+    }
+    .overview-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4facfe;
+    }
+    .overview-label {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
+    
+    .content {
+      padding: 30px;
+    }
+    
+    .month-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .month-header {
+      background: #f5f5f5;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .month-header:hover {
+      background: #e8e8e8;
+    }
+    .month-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+    .month-meta {
+      display: flex;
+      gap: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+    .expand-icon {
+      font-size: 20px;
+      transition: transform 0.3s;
+    }
+    .expanded .expand-icon {
+      transform: rotate(180deg);
+    }
+    
+    .month-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: white;
+    }
+    .expanded .month-body {
+      max-height: 2000px; /* 足够大以显示内容 */
+    }
+    
+    .week-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin: 10px 15px;
+      padding: 15px;
+      background: #fafafa;
+    }
+    .week-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .week-title {
+      font-weight: bold;
+      color: #333;
+    }
+    .week-status {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-completed { background: #e8f5e9; color: #4caf50; }
+    .status-inprogress { background: #fff3e0; color: #ff9800; }
+    .status-upcoming { background: #e3f2fd; color: #2196f3; }
+    
+    .week-goal {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .week-tasks {
+      list-style: none;
+    }
+    .week-tasks li {
+      padding: 8px 0;
+      border-bottom: 1px dashed #eee;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    .week-tasks li:last-child {
+      border-bottom: none;
+    }
+    .task-checkbox {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .task-text {
+      flex: 1;
+    }
+    .task-text.completed {
+      text-decoration: line-through;
+      color: #999;
+    }
+    .task-meta {
+      font-size: 12px;
+      color: #999;
+      margin-left: 10px;
+    }
+    
+    .adjustment-note {
+      margin: 15px;
+      padding: 12px;
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #666;
+    }
+    .adjustment-note strong {
+      color: #f57c00;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    .floating-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+    .floating-btn:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 备考计划</h1>
+      <div class="subtitle">6个月系统学习，目标145+</div>
+    </div>
+    
+    <div class="progress-overview">
+      <div class="overview-item">
+        <div class="overview-value" id="total-progress">45%</div>
+        <div class="overview-label">总进度</div>
+      </div>
+      <div class="overview-item">
+        <div class="overview-value" id="current-streak">12天</div>
+        <div class="overview-label">连续学习</div>
+      </div>
+      <div class="overview-item">
+        <div class="overview-value" id="avg-accuracy">72%</div>
+        <div class="overview-label">平均正确率</div>
+      </div>
+      <div class="overview-item">
+        <div class="overview-value" id="study-hours">86h</div>
+        <div class="overview-label">学习时长</div>
+      </div>
+    </div>
+    
+    <div class="content" id="plan-container">
+      <!-- 计划卡片将通过JS动态加载 -->
+      <div class="empty-state">加载中...</div>
+    </div>
+  </div>
+  
+  <button class="floating-btn" onclick="showAdjustmentModal()" title="调整计划">
+    ✏️
+  </button>
+
+  <script>
+    // 模拟数据（实际应从API获取）
+    const planData = {
+      user: { name: '考生', target_score: '145+', exam_date: '2025-11-30' },
+      months: [
+        {
+          id: 1,
+          name: '第1个月（基础期）',
+          date_range: '2025-03-01 ~ 2025-03-31',
+          status: 'in_progress',
+          progress: 65,
+          adjustments: [
+            { date: '2025-03-14', reason: '进度太快', detail: '第一周基础学习时间不足，延长基础期至3个月' }
+          ],
+          weeks: [
+            {
+              id: 1,
+              name: '第1周',
+              date_range: '3.1-3.7',
+              status: 'completed',
+              goal: '言语理解-主旨概括+语句排序基础',
+              tasks: [
+                { id: 1, content: '学习粉笔980第1节：片段阅读理论', completed: true, material: '粉笔980' },
+                { id: 2, content: '完成课后练习20题', completed: true, material: '粉笔APP' },
+                { id: 3, content: '整理主旨题3种解题方法笔记', completed: true, material: '自己的笔记' }
+              ]
+            },
+            {
+              id: 2,
+              name: '第2周',
+              date_range: '3.8-3.14',
+              status: 'in_progress',
+              goal: '言语强化+判断入门',
+              tasks: [
+                { id: 4, content: '言语错题重做（30题）', completed: true, material: '错题本' },
+                { id: 5, content: '判断推理第4节：图形推理入门', completed: false, material: '粉笔980' },
+                { id: 6, content: '图形基础练习40题', completed: false, material: '粉笔APP' }
+              ]
+            },
+            {
+              id: 3,
+              name: '第3周',
+              date_range: '3.15-3.21',
+              status: 'upcoming',
+              goal: '判断推理系统学习',
+              tasks: [
+                { id: 7, content: '定义判断理论+练习', completed: false, material: '粉笔980' },
+                { id: 8, content: '类比推理理论+练习', completed: false, material: '粉笔980' },
+                { id: 9, content: '逻辑判断加强削弱', completed: false, material: '粉笔980' }
+              ]
+            },
+            {
+              id: 4,
+              name: '第4周',
+              date_range: '3.22-3.28',
+              status: 'upcoming',
+              goal: '基础巩固+首次模考',
+              tasks: [
+                { id: 10, content: '言语+判断错题重做', completed: false, material: '错题本' },
+                { id: 11, content: '知识点思维导图整理', completed: false, material: '自己的笔记' },
+                { id: 12, content: '第一套真题（不限时）', completed: false, material: '历年真题' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 2,
+          name: '第2个月（基础期）',
+          date_range: '2025-04-01 ~ 2025-04-30',
+          status: 'upcoming',
+          progress: 0,
+          adjustments: [],
+          weeks: [
+            { id: 5, name: '第5周', date_range: '4.1-4.7', status: 'upcoming', goal: '数量关系基础', tasks: [] },
+            { id: 6, name: '第6周', date_range: '4.8-4.14', status: 'upcoming', goal: '资料分析基础', tasks: [] }
+          ]
+        }
+      ]
+    };
+    
+    // 渲染计划
+    function renderPlan() {
+      const container = document.getElementById('plan-container');
+      container.innerHTML = '';
+      
+      planData.months.forEach(month => {
+        const monthCard = document.createElement('div');
+        monthCard.className = 'month-card';
+        monthCard.innerHTML = `
+          <div class="month-header" onclick="toggleMonth(${month.id})">
+            <div>
+              <span class="month-title">${month.name}</span>
+              <span class="month-meta">${month.date_range}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:15px;">
+              <span style="font-size:14px;color:#666;">进度：${month.progress}%</span>
+              <span class="expand-icon">▼</span>
+            </div>
+          </div>
+          <div class="month-body" id="month-body-${month.id}">
+            ${month.adjustments && month.adjustments.length > 0 ? `
+              <div class="adjustment-note">
+                ⚠️ <strong>计划已调整</strong>：${month.adjustments[0].reason}<br>
+                <small>${month.adjustments[0].detail}</small>
+              </div>
+            ` : ''}
+            ${month.weeks.map(week => `
+              <div class="week-card">
+                <div class="week-header">
+                  <span class="week-title">${week.name} · ${week.date_range}</span>
+                  <span class="week-status status-${week.status}">${
+                    week.status === 'completed' ? '已完成' :
+                    week.status === 'in_progress' ? '进行中' : '待开始'
+                  }</span>
+                </div>
+                <div class="week-goal">🎯 目标：${week.goal}</div>
+                ${week.tasks && week.tasks.length > 0 ? `
+                  <ul class="week-tasks">
+                    ${week.tasks.map(task => `
+                      <li>
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} 
+                               onchange="toggleTask(${month.id}, ${week.id}, ${task.id})">
+                        <span class="task-text ${task.completed ? 'completed' : ''}">${task.content}</span>
+                        <span class="task-meta">📚${task.material}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                ` : '<div class="empty-state" style="padding:10px;">暂无任务详情</div>'}
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(monthCard);
+      });
+      
+      // 默认展开第一个月
+      document.getElementById('month-body-1').style.maxHeight = '2000px';
+      document.querySelector('.month-card:first-child').classList.add('expanded');
+    }
+    
+    function toggleMonth(monthId) {
+      const card = document.querySelector(`.month-card:nth-child(${monthId})`);
+      const body = document.getElementById(`month-body-${monthId}`);
+      card.classList.toggle('expanded');
+      if (card.classList.contains('expanded')) {
+        body.style.maxHeight = '2000px';
+      } else {
+        body.style.maxHeight = '0';
+      }
+    }
+    
+    function toggleTask(monthId, weekId, taskId) {
+      // 实际应该调用API更新任务状态
+      console.log(`Toggle task: month=${monthId}, week=${weekId}, task=${taskId}`);
+      // 这里仅做UI演示
+    }
+    
+    function showAdjustmentModal() {
+      const reason = prompt('调整原因：\n1=进度太快\n2=进度太慢\n3=资料不适合\n4=时间不够\n5=其他');
+      const detail = prompt('请详细说明：');
+      if (reason && detail) {
+        // 调用API创建调整记录
+        alert('调整已记录！');
+      }
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      renderPlan();
+    });
+  </script>
+</body>
+</html>

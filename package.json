@@ -4,8 +4,9 @@
   "description": "考公学习伴侣 - SaaS托管服务版，像多邻国一样的AI公务员考试备考助手",
   "main": "server-updated.js",
   "scripts": {
-    "start": "node server-updated.js",
-    "dev": "nodemon server-updated.js",
+    "start": "node server-complete.js",
+    "dev": "nodemon server-complete.js",
+    "monitor": "node utils/study-monitor.js",
     "setup": "python scripts/init_db.py",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
