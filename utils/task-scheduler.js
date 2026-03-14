@@ -31,13 +31,74 @@ class TaskScheduler {
     // 3. 选择题目（优先薄弱点）
     const questions = await this.selectQuestions(weakPoints, taskCount);
     
-    // 4. 保存任务到数据库
+    // 4. 丰富题目数据（添加解析、知识点标签、相似题）
+    await this.enrichQuestions(questions);
+    
+    // 5. 保存任务到数据库
     await this.saveTasks(questions, todayStr);
     
-    // 5. 发送飞书消息
+    // 6. 发送飞书消息
     await this.sendDailyTaskCard(questions, todayStr);
     
     console.log(`  ✅ 完成：${questions.length} 道题目`);
+  }
+
+  /**
+   * 丰富题目数据 - 添加解析、知识点标签、相似题推荐
+   */
+  async enrichQuestions(questions) {
+    for (const q of questions) {
+      // 如果已有解析，跳过
+      if (q.explanation) continue;
+      
+      // 调用 xingce-agent 生成详细解析
+      try {
+        const xingceAgent = require('../src/agents/xingce-agent');
+        const agent = new xingceAgent();
+        
+        const prompt = `请为这道题目生成详细解析和学习建议。
+题目：${q.content}
+选项：${q.options ? q.options.join('；') : '无'}
+正确答案：${q.correct_answer}
+
+要求：
+1. 分步骤解析，说明解题思路
+2. 指出常见错误和陷阱
+3. 提供1-2个解题技巧
+4. 列出3个相关的知识点标签（如：中心理解、关键词法、转折关系）
+5. 如果这道题属于某个知识点，建议3道同类题（给出题目ID或简要描述）
+
+输出JSON格式：
+{
+  "explanation": "详细解析文本",
+  "knowledge_points": ["知识点1", "知识点2", "知识点3"],
+  "tips": ["技巧1", "技巧2"],
+  "similar_questions": [
+    {"id": "q001", "title": "...", "difficulty": "medium"},
+    {"id": "q002", "title": "...", "difficulty": "easy"}
+  ]
+}`;
+        
+        const result = await agent.handle(prompt);
+        const json = agent._parseJSONResponse(result.answer);
+        
+        if (json) {
+          q.explanation = json.explanation || result.explanation || '暂无解析';
+          q.knowledge_tags = json.knowledge_points || [q.knowledge_point];
+          q.similar_questions = json.similar_questions || [];
+        } else {
+          // 降级：使用LLM直接返回的文本作为解析
+          q.explanation = result.answer || result.explanation || '暂无解析';
+          q.knowledge_tags = [q.knowledge_point];
+          q.similar_questions = [];
+        }
+      } catch (error) {
+        console.error(`生成解析失败: ${q.id}`, error);
+        q.explanation = '解析生成失败，请联系管理员';
+        q.knowledge_tags = [q.knowledge_point];
+        q.similar_questions = [];
+      }
+    }
   }
 
   /**
@@ -156,8 +217,14 @@ class TaskScheduler {
           question_content: q.content,
           options: q.options || null,
           correct_answer: q.correct_answer,
-          explanation: q.explanation || '',
+          explanation: q.explanation || null,
+          knowledge_tags: q.knowledge_tags || null,
+          similar_questions: q.similar_questions || null,
+          user_answer: null,
+          is_correct: null,
+          time_spent_seconds: null,
           points_available: this.calculatePoints(q.difficulty),
+          points_earned: 0,
           status: 'pending'
         }
       });
