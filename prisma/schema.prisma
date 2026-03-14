@@ -25,9 +25,14 @@ model User {
   status             String           @default("active") // active/completed/dropped
   registered_at      DateTime         @default(now())
   updated_at         DateTime         @updatedAt
+  learning_style     String?          // visual/auditory/kinesthetic/mixed
+  preferred_materials Json?           // ["粉笔980", "花生十三", "站长申论"]
   
   tasks              DailyTask[]
   progressSnapshots  ProgressSnapshot[]
+  planAdjustments    PlanAdjustment[]
+  materialFeedback  MaterialFeedback[]
+  studySessions      StudySession[]
   
   @@index([open_id])
   @@index([status])
@@ -48,6 +53,117 @@ model DailyTask {
   time_spent_seconds  Int?
   points_available    Int
   points_earned       Int              @default(0)
+  explanation         Text?            // 详细解析
+  knowledge_tags      Json?            // ["中心理解", "关键词法"]
+  similar_questions   Json?            // [{id, difficulty, ...}]
+  estimated_minutes   Int?             // 预计用时（分钟）
+  difficulty          String           @default("medium") // easy/medium/hard
+  used_material       String?          // 使用的资料名称（如"粉笔980-第1节"）
+  status              String           @default("pending") // pending/completed/expired
+  created_at          DateTime         @default(now())
+  
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@unique([user_id, task_date, knowledge_point])
+  @@index([user_id, task_date])
+  @@index([user_id, status])
+  @@index([knowledge_point])
+  @@index([user_id, used_material])
+}
+
+model ProgressSnapshot {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int
+  snapshot_date       DateTime
+  knowledge_point     String
+  total_questions     Int              @default(0)
+  correct_count       Int              @default(0)
+  accuracy            Decimal?         @db.Decimal(5, 2)
+  estimated_score     Decimal?         @db.Decimal(5, 2)
+  module_scores       Json?            // {"数量关系": 68, ...}
+  streak_days         Int              @default(0)
+  level               Int              @default(1)
+  total_points        Int              @default(0)
+  study_minutes_today Int              @default(0) // 今日学习时长
+  mood_today         String?          // 今日学习感受：great/good/neutral/bad/terrible
+  created_at          DateTime         @default(now())
+  
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@unique([user_id, snapshot_date, knowledge_point])
+  @@index([user_id, snapshot_date])
+  @@index([knowledge_point])
+}
+
+model PlanAdjustment {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int?
+  adjustment_date     DateTime         @default(now())
+  reason              String           // too_fast/too_slow/material_not_suitable/time_insufficient/other
+  reason_detail       String?          // 详细说明
+  original_plan       Json             // 原计划（JSON）
+  adjusted_plan       Json             // 调整后计划（JSON）
+  impact_modules      Json?            // 影响的模块 ["言语理解", "判断推理"]
+  created_at          DateTime         @default(now())
+  
+  user                User?            @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  
+  @@index([user_id])
+  @@index([adjustment_date])
+}
+
+model MaterialFeedback {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int
+  material_name       String           // 如"粉笔980"
+  rating              Int              // 1-5分
+  feedback_text       String?          // 用户反馈
+  is_active          Boolean          @default(true) // 是否仍在使用
+  created_at          DateTime         @default(now())
+  
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@unique([user_id, material_name])
+  @@index([user_id])
+  @@index([material_name])
+}
+
+model StudySession {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int
+  start_time          DateTime
+  end_time            DateTime?
+  duration_minutes    Int?              // 学习时长（分钟）
+  tasks_completed     Int?              // 完成题目数
+  correct_count       Int?              // 正确题数
+  knowledge_points    Json?             // 涉及的知识点列表
+  mood_after         String?           // 学习后感受（同mood_today）
+  notes              String?           // 用户笔记
+  created_at          DateTime         @default(now())
+  
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([user_id, start_time])
+  @@index([user_id])
+}
+
+model DailyTask {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int
+  task_date           DateTime
+  task_type           String?          // 行测/申论/常识
+  knowledge_point     String
+  question_content    Text
+  options             Json?            // 选项数组
+  correct_answer      String
+  user_answer         String?
+  is_correct          Boolean?
+  time_spent_seconds  Int?
+  points_available    Int
+  points_earned       Int              @default(0)
+  explanation         Text?            // 详细解析
+  knowledge_tags      Json?            // ["中心理解", "关键词法"]
+  similar_questions   Json?            // [{id, difficulty, ...}]
   status              String           @default("pending") // pending/completed/expired
   created_at          DateTime         @default(now())
   
