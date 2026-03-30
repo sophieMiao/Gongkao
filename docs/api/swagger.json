@@ -1,0 +1,160 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Gongkao API",
+    "version": "2.0.0",
+    "description": "考公学习伴侣 API 文档"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "本地开发服务器"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "健康检查",
+        "responses": {
+          "200": {
+            "description": "服务正常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{skill}.{action}": {
+      "post": {
+        "summary": "通用技能调用接口",
+        "parameters": [
+          {
+            "name": "skill",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "技能名称（如 kaogong-core, kaogong-notification 等）"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "技能内的操作名称"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "操作成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "additionalProperties": true },
+                    "error": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "open_id": { "type": "string" },
+          "name": { "type": "string" },
+          "avatar": { "type": "string" },
+          "department": { "type": "string" }
+        }
+      },
+      "DailyTask": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "userId": { "type": "string" },
+          "date": { "type": "string", "format": "date" },
+          "tasks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TaskItem" }
+          },
+          "completed": { "type": "boolean" },
+          "score": { "type": "number" },
+          "duration": { "type": "number" },
+          "mood": {
+            "type": "string",
+            "enum": ["great", "good", "neutral", "bad", "terrible"]
+          }
+        }
+      },
+      "TaskItem": {
+        "type": "object",
+        "properties": {
+          "knowledgePoint": { "type": "string" },
+          "questionCount": { "type": "number" },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"]
+          },
+          "estimatedMinutes": { "type": "number" }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "content": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["choice", "fill", "essay"]
+          },
+          "options": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "answer": { "type": "string" },
+          "explanation": { "type": "string" },
+          "knowledgePoints": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "difficulty": { "type": "number", "minimum": 0, "maximum": 1 },
+          "source": {
+            "type": "string",
+            "enum": ["bank", "ai"]
+          }
+        }
+      }
+    }
+  }
+}

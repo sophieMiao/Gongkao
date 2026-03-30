@@ -1,0 +1,109 @@
+---
+- name: Deploy Gongkao Agent
+  hosts: gongkao_servers
+  become: yes
+  vars:
+    app_name: gongkao-agent
+    install_dir: /opt/gongkao
+    docker_compose_file: "{{ install_dir }}/docker-compose.saas.yml"
+    backup_dir: /backup/gongkao
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - git
+          - curl
+          - jq
+          - python3-pip
+          - postgresql-client
+          - redis-tools
+        state: present
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ install_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone or update repository
+      git:
+        repo: https://github.com/sophieMiao/Gongkao.git
+        dest: "{{ install_dir }}"
+        version: feature/lightweight
+        force: yes
+      register: git_result
+
+    - name: Copy environment file
+      template:
+        src: ".env.saas"
+        dest: "{{ install_dir }}/.env"
+      when: git_result.changed
+
+    - name: Create backup directory
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Run database backup before update
+      command: "{{ install_dir }}/scripts/backup-db.sh {{ backup_dir }}"
+      when: git_result.changed
+      ignore_errors: yes
+
+    - name: Stop old containers (if any)
+      command: docker-compose -f "{{ docker_compose_file }}" down
+      args:
+        chdir: "{{ install_dir }}"
+      ignore_errors: yes
+
+    - name: Build and start services
+      command: docker-compose -f "{{ docker_compose_file }}" up -d --build
+      args:
+        chdir: "{{ install_dir }}"
+
+    - name: Wait for service to be healthy
+      wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 8080
+        timeout: 60
+        state: started
+
+    - name: Check service health
+      uri:
+        url: "http://localhost:8080/health"
+        return_content: yes
+      register: health_check
+      retries: 5
+      delay: 10
+
+    - name: Display health check result
+      debug:
+        msg: "Service is healthy: {{ health_check.json.status }}"
+
+    - name: Setup cron for automatic updates
+      cron:
+        name: "Gongkao daily update"
+        minute: "0"
+        hour: "2"
+        job: "cd {{ install_dir }} && ./scripts/auto-update.sh >> /var/log/gongkao-update.log 2>&1"
+
+    - name: Setup cron for database backup
+      cron:
+        name: "Gongkao database backup"
+        minute: "0"
+        hour: "3"
+        job: "{{ install_dir }}/scripts/backup-db.sh {{ backup_dir }}"

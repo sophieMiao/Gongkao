@@ -1,0 +1,22 @@
+{
+  "name": "考公学习伴侣",
+  "short_name": "考公伴侣",
+  "description": "像多邻国一样的AI公务员考试学习伴侣",
+  "start_url": "/task.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

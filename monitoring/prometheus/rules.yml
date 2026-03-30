@@ -1,0 +1,80 @@
+groups:
+  - name: gongkao_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(gongkao_http_requests_total{status_code=~"5.."}[5m])) / sum(rate(gongkao_http_requests_total[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "HTTP 5xx 错误率过高"
+          description: "当前 5xx 错误率: {{ $value | humanizePercentage }}，已超过阈值 5%"
+
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(gongkao_http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "API 响应延迟过高"
+          description: "P95 延迟: {{ $value }}s，已超过阈值 1s"
+
+      - alert: LowTaskCompletionRate
+        expr: |
+          gongkao_task_completion_rate < 0.6
+        for: 1h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "任务完成率过低"
+          description: "当前任务完成率: {{ $value | humanizePercentage }}，已低于阈值 60%"
+
+      - alert: LowAnswerCorrectness
+        expr: |
+          gongkao_answer_correctness_rate < 0.5
+        for: 1h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "答题正确率过低"
+          description: "当前正确率: {{ $value | humanizePercentage }}，已低于阈值 50%"
+
+      - alert: AIApiHighFailureRate
+        expr: |
+          sum(rate(gongkao_ai_calls_total{status="failure"}[5m])) / sum(rate(gongkao_ai_calls_total[5m])) > 0.1
+        for: 3m
+        labels:
+          severity: critical
+          component: ai
+        annotations:
+          summary: "AI 调用失败率过高"
+          description: "当前失败率: {{ $value | humanizePercentage }}，已超过阈值 10%"
+
+      - alert: HighMemoryUsage
+        expr: |
+          gongkao_node_memory_bytes{type="heap_used"} / 1024 / 1024 > 400
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "内存使用过高"
+          description: "堆内存使用: {{ $value }}MB，已超过阈值 400MB"
+
+      - alert: ServiceDown
+        expr: |
+          up{job="gongkao"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: service
+        annotations:
+          summary: "Gongkao 服务宕机"
+          description: "服务已下线超过 1 分钟"

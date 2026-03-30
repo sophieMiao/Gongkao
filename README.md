@@ -251,6 +251,169 @@ http://your-domain.com/task.html?user=1&task_id=123
 
 ---
 
+## 🔧 开发环境设置
+
+### 快速开始（开发者）
+
+```bash
+# 1. 克隆仓库
+git clone -b feature/lightweight https://github.com/sophieMiao/Gongkao.git
+cd Gongkao
+
+# 2. 安装依赖
+npm install
+
+# 3. 配置环境变量
+cp .env.saas .env
+# 编辑 .env，填入必要的 API Key
+
+# 4. 启动数据库（PostgreSQL + Redis）
+docker-compose -f docker-compose.saas.yml up -d postgres redis
+
+# 5. 初始化数据库
+npm run setup
+
+# 6. 启动开发服务器（热重载）
+npm run dev
+
+# 7. 在另一个终端启动定时任务（可选）
+npm run cron
+```
+
+### 开发工具
+
+| 命令 | 说明 |
+|------|------|
+| `npm run build` | 编译 TypeScript（如果项目已迁移） |
+| `npm run typecheck` | 类型检查 |
+| `npm run lint` | 代码检查 |
+| `npm run lint:fix` | 自动修复代码问题 |
+| `npm run test` | 运行测试 |
+| `npm run docker:build` | 构建 Docker 镜像 |
+| `npm run prisma:studio` | 打开数据库管理界面 |
+
+### 项目结构
+
+```
+Gongkao/
+├── server.js              # 主服务器入口
+├── server.saas.js         # SaaS 版本服务器
+├── skills/                # OpenClaw 技能模块
+│   ├── kaogong-core/      # 核心学习逻辑
+│   ├── kaogong-notification/ # 飞书推送
+│   └── kaogong-knowledge/ # 知识库管理
+├── src/agents/            # 智能体
+│   ├── xingce-agent.js    # 行测智能体
+│   ├── shenlun-agent.js   # 申论智能体
+│   ├── policy-agent.js    # 政策智能体
+│   └── motivation-agent.js # 激励智能体
+├── utils/                 # 工具函数
+│   ├── question-bank.js   # 题库管理
+│   ├── simple-retriever.js # 轻量检索器
+│   ├── feishu-sender.js   # 飞书消息发送
+│   └── ai-generator.js    # AI 题目生成
+├── data/                  # 数据文件
+│   ├── question_bank.json # 题库
+│   └── knowledge_points.json # 知识点
+├── docs/                  # 文档
+├── tests/                 # 测试
+├── docker-compose.saas.yml # Docker 编排
+├── .env.saas              # 环境变量模板
+├── prisma/                # 数据库 Schema
+└── types/                 # TypeScript 类型定义
+```
+
+---
+
+## 🐛 故障排查
+
+### 常见问题
+
+#### 1. 容器启动失败
+
+```bash
+# 查看日志
+docker-compose -f docker-compose.saas.yml logs app
+
+# 检查端口占用
+netstat -tulpn | grep :8080
+
+# 清理旧容器
+docker-compose -f docker-compose.saas.yml down
+docker system prune -f
+```
+
+#### 2. 数据库连接失败
+
+```bash
+# 确认 PostgreSQL 容器运行中
+docker-compose -f docker-compose.saas.yml ps postgres
+
+# 检查数据库密码
+# 确保 .env 中的 POSTGRES_PASSWORD 与数据库设置一致
+
+# 重置数据库
+docker-compose -f docker-compose.saas.yml down
+docker volume rm gongkao_postgres_data
+docker-compose -f docker-compose.saas.yml up -d postgres
+npm run setup
+```
+
+#### 3. Redis 连接失败
+
+```bash
+# 检查 Redis 容器
+docker-compose -f docker-compose.saas.yml ps redis
+
+# 测试 Redis 连接
+docker-compose -f docker-compose.saas.yml exec redis redis-cli ping
+```
+
+#### 4. 飞书机器人消息发送失败
+
+- 确认 `FEISHU_APP_ID`、`FEISHU_APP_SECRET`、`FEISHU_VERIFICATION_TOKEN` 已正确配置
+- 检查飞书开放平台应用是否已发布并安装到工作区
+- 确认消息推送 URL 可公网访问（或使用 ngrok 内网穿透）
+- 查看服务器日志：`docker-compose logs app`
+
+#### 5. StepFun API 调用失败
+
+```bash
+# 测试 API Key 是否有效
+curl -X POST https://api.stepfun.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"step-3.5-flash","messages":[{"role":"user","content":"test"}]}'
+
+# 检查配额使用情况
+# 登录 https://platform.stepfun.com 查看
+```
+
+#### 6. Docker 内存不足
+
+- 轻量版推荐 2GB 以上内存
+- 检查 Docker 内存限制：`docker stats`
+- 如需节省内存，可以停止不必要的服务
+
+#### 7. 定时任务不执行
+
+```bash
+# 查看定时任务日志
+docker-compose -f docker-compose.saas.yml logs app | grep "cron"
+
+# 确认 node-cron 已加载
+# 检查 server.js 中的 setupCronJobs 函数
+```
+
+### 性能调优
+
+- 使用 Redis 缓存热点数据
+- 优化数据库查询（添加索引）
+- 调整 PostgreSQL 共享缓冲区
+- 使用 PM2 替代单进程 Node
+
+---
+
 ## 📦 部署（Docker Compose 文件说明）
 
 ### 轻量版配置（推荐）

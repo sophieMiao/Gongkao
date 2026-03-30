@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#667eea">
+  <title>考公学习伴侣 - 每日任务</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+  <style>
+    :root {
+      --primary-color: #4facfe;
+      --secondary-color: #00f2fe;
+      --accent-color: #ffd700;
+      --success-color: #4caf50;
+      --error-color: #f44336;
+      --text-primary: #333;
+      --text-secondary: #666;
+      --bg-light: #f8f9fa;
+      --border-radius: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 15px;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+      background-size: 100% 100%;
+      pointer-events: none;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header .subtitle {
+      font-size: 16px;
+      opacity: 0.95;
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-container {
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-color), #ffed4e);
+      border-radius: 5px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .progress-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 25px 20px;
+    }
+
+    .task-info {
+      margin-bottom: 25px;
+      background: var(--bg-light);
+      border-radius: var(--border-radius);
+      padding: 20px;
+    }
+
+    .task-info h2 {
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .task-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .task-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 25px 0 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary-color);
+      display: inline-block;
+    }
+
+    .question-card {
+      background: white;
+      border: 2px solid #e8eaf6;
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .question-card.flipped {
+      background: #fff8e1;
+      border-color: #ffc107;
+    }
+
+    .question-text {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--text-primary);
+      margin-bottom: 25px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      padding: 15px 18px;
+      background: var(--bg-light);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option:hover {
+      border-color: var(--primary-color);
+      background: #e6f2ff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.2);
+    }
+
+    .option.selected {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, #e6f2ff, #f0f8ff);
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.25);
+    }
+
+    .option.correct {
+      border-color: var(--success-color);
+      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    }
+
+    .option.incorrect {
+      border-color: var(--error-color);
+      background: linear-gradient(135deg, #ffebee, #fff5f5);
+    }
+
+    .option::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: width 0.5s;
+    }
+
+    .option:hover::after {
+      width: 100%;
+    }
+
+    .option-letter {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-right: 15px;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3);
+    }
+
+    .option.selected .option-letter {
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.5);
+    }
+
+    .option.correct .option-letter {
+      background: linear-gradient(135deg, var(--success-color), #66bb6a);
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5);
+    }
+
+    .option.incorrect .option-letter {
+      background: linear-gradient(135deg, var(--error-color), #ef5350);
+      box-shadow: 0 4px 15px rgba(244, 67, 54, 0.5);
+    }
+
+    .option-text {
+      flex: 1;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .btn {
+      padding: 16px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:active::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(79, 172, 254, 0.5);
+    }
+
+    .btn-primary:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      background: #bdbdbd;
+      color: #757575;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: #f5f5f5;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+    }
+
+    .explanation {
+      margin-top: 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, #fff8e1, #ffecb3);
+      border-radius: 12px;
+      border-left: 5px solid #ffc107;
+      display: none;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .explanation.show {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .explanation h4 {
+      color: #f57c00;
+      margin-bottom: 12px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .explanation p {
+      color: #5d4037;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .stats-dashboard {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 20px;
+      margin: 25px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      margin-top: 15px;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 15px;
+      padding: 10px;
+      background: var(--bg-light);
+      border-radius: var(--border-radius);
+    }
+
+    .timer span {
+      color: var(--primary-color);
+      font-weight: bold;
+      font-size: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+      font-size: 12px;
+      border-top: 1px solid #eee;
+      background: var(--bg-light);
+    }
+
+    .footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .flip-container {
+      perspective: 1000px;
+      margin-bottom: 20px;
+    }
+
+    .flipper {
+      transition: 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+    }
+
+    .flipper.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .question-front, .question-back {
+      backface-visibility: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      border-radius: var(--border-radius);
+      padding: 25px;
+      background: white;
+      border: 2px solid #e8eaf6;
+    }
+
+    .question-back {
+      transform: rotateY(180deg);
+      background: #fff8e1;
+      border-color: #ffc107;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        border-radius: 16px;
+      }
+
+      .header {
+        padding: 20px 15px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .content {
+        padding: 20px 15px;
+      }
+
+      .task-info {
+        padding: 15px;
+      }
+
+      .question-card {
+        padding: 18px;
+      }
+
+      .option {
+        padding: 12px 15px;
+      }
+
+      .btn {
+        padding: 14px;
+        font-size: 15px;
+      }
+
+      .actions {
+        gap: 10px;
+      }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .option:active {
+        transform: scale(0.98);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 考公学习伴侣</h1>
+      <div class="subtitle">第 <span id="day-number">1</span> 天任务</div>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="progress-stats">
+          <span>进度: <span id="progress-text">0%</span></span>
+          <span>剩余: <span id="remaining-count">0</span> 题</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="task-info">
+        <h2 id="knowledge-point">数量关系-工程问题</h2>
+        <div class="task-meta">
+          <span>⏱️ 预计 <span id="estimated-time">5</span> 分钟</span>
+          <span>💎 <span id="points">15</span> 积分</span>
+          <span>🔥 连续 <span id="streak">0</span> 天</span>
+          <span>📊 正确率: <span id="accuracy">0%</span></span>
+        </div>
+      </div>
+
+      <div class="stats-dashboard" id="stats-dashboard" style="display: none;">
+        <div class="section-title">📈 今日学习统计</div>
+        <div class="chart-container">
+          <canvas id="progress-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="section-title">📝 答题</div>
+
+      <div class="flip-container">
+        <div class="flipper" id="flipper">
+          <div class="question-front">
+            <div class="question-text" id="question-content">
+              甲乙合作完成一项工程需要10天，甲单独做需要15天，乙单独做需要多少天？
+            </div>
+            <div class="options" id="options">
+              <!-- 选项将通过 JS 动态生成 -->
+            </div>
+          </div>
+          <div class="question-back">
+            <h3 style="margin-bottom: 15px; color: #f57c00;">💡 解析</h3>
+            <div id="explanation-text"></div>
+            <div style="margin-top: 20px; text-align: center;">
+              <button class="btn btn-secondary" onclick="flipCard()" style="width: 100%;">返回题目</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timer">
+        用时：<span id="timer">0</span> 秒
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="skipQuestion()">跳过</button>
+        <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">提交答案</button>
+        <button class="btn btn-secondary" id="flip-btn" onclick="flipCard()" style="display: none;">查看解析</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>考公学习伴侣 · 让每一天都有进步</p>
+      <p style="margin-top: 5px; font-size: 11px;">版本 2.0.0-enhanced</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    // 注册 Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => {
+        console.log('SW registration failed:', err);
+      });
+    }
+
+    // 全局状态
+    let currentTask = null;
+    let selectedOption = null;
+    let startTime = null;
+    let timerInterval = null;
+    let progressChart = null;
+    let questionIndex = 0;
+    let totalQuestions = 0;
+    let correctAnswers = 0;
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const taskId = urlParams.get('task_id');
+      const userId = urlParams.get('user');
+      
+      if (!taskId || !userId) {
+        alert('缺少任务参数');
+        window.close();
+        return;
+      }
+
+      // 加载任务详情和题目列表
+      await loadTask(taskId, userId);
+      startTimer();
+      updateStats();
+    });
+
+    // 加载任务详情
+    async function loadTask(taskId, userId) {
+      try {
+        // 这里应该调用 API 获取任务数据
+        // 暂时使用模拟数据
+        const mockTask = {
+          day_number: 15,
+          knowledge_point: '数量关系-工程问题',
+          estimated_minutes: 12,
+          points_available: 120,
+          streak: 5,
+          level: 4,
+          questions: [
+            {
+              id: 'q1',
+              content: '甲乙合作完成一项工程需要10天，甲单独做需要15天，乙单独做需要多少天？',
+              options: ['20天', '25天', '30天', '35天'],
+              correct_answer: 'C',
+              explanation: '甲的工作效率为1/15，合作效率为1/10，所以乙的效率为1/10-1/15=1/30，乙单独完成需要30天。'
+            },
+            {
+              id: 'q2',
+              content: '一项工作，甲单独做20天完成，乙单独做30天完成，两人合作多少天能完成？',
+              options: ['10天', '12天', '15天', '18天'],
+              correct_answer: 'B',
+              explanation: '甲效率1/20，乙效率1/30，合作效率1/20+1/30=1/12，需要12天完成。'
+            },
+            {
+              id: 'q3',
+              content: '一批货物，用卡车运需要8次，用拖拉机运需要12次，卡车和拖拉机一起运，几次能运完？',
+              options: ['4.8次', '5次', '4次', '6次'],
+              correct_answer: 'A',
+              explanation: '卡车每次运1/8，拖拉机每次运1/12，合起来每次运1/8+1/12=5/24，需要24/5=4.8次。'
+            }
+          ]
+        };
+
+        currentTask = mockTask;
+        totalQuestions = mockTask.questions.length;
+        
+        // 更新页面信息
+        document.getElementById('day-number').textContent = mockTask.day_number;
+        document.getElementById('knowledge-point').textContent = mockTask.knowledge_point;
+        document.getElementById('estimated-time').textContent = mockTask.estimated_minutes;
+        document.getElementById('points').textContent = mockTask.points_available;
+        document.getElementById('streak').textContent = mockTask.streak;
+        
+        // 加载第一题
+        loadQuestion(0);
+        
+      } catch (error) {
+        console.error('加载任务失败:', error);
+        alert('加载任务失败，请重试');
+      }
+    }
+
+    // 加载特定题目
+    function loadQuestion(index) {
+      if (index >= totalQuestions) {
+        // 所有题目完成
+        showCompletion();
+        return;
+      }
+
+      const question = currentTask.questions[index];
+      questionIndex = index;
+      
+      document.getElementById('question-content').textContent = question.content;
+      
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = '';
+      
+      const letters = ['A', 'B', 'C', 'D'];
+      question.options.forEach((opt, idx) => {
+        const optionEl = document.createElement('div');
+        optionEl.className = 'option';
+        optionEl.dataset.letter = letters[idx];
+        optionEl.dataset.value = opt;
+        optionEl.innerHTML = `
+          <div class="option-letter">${letters[idx]}</div>
+          <div class="option-text">${opt}</div>
+        `;
+        optionEl.onclick = () => selectOption(optionEl);
+        optionsContainer.appendChild(optionEl);
+      });
+      
+      // 重置状态
+      selectedOption = null;
+      document.getElementById('submit-btn').disabled = false;
+      document.getElementById('explanation').classList.remove('show');
+      document.getElementById('flip-btn').style.display = 'none';
+      document.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('selected', 'correct', 'incorrect');
+      });
+      
+      // 重置卡片翻转状态
+      document.getElementById('flipper').classList.remove('flipped');
+      
+      updateProgress();
+    }
+
+    // 选择选项
+    function selectOption(optionEl) {
+      document.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      optionEl.classList.add('selected');
+      selectedOption = optionEl.dataset.letter;
+    }
+
+    // 提交答案
+    async function submitAnswer() {
+      if (!selectedOption) {
+        alert('请选择答案');
+        return;
+      }
+
+      const question = currentTask.questions[questionIndex];
+      const isCorrect = selectedOption === question.correct_answer;
+      
+      if (isCorrect) {
+        correctAnswers++;
+      }
+      
+      // 显示结果
+      const options = document.querySelectorAll('.option');
+      options.forEach(opt => {
+        if (opt.dataset.value === question.correct_answer) {
+          opt.classList.add('correct');
+        } else if (opt.dataset.letter === selectedOption && !isCorrect) {
+          opt.classList.add('incorrect');
+        }
+      });
+      
+      // 显示解析
+      document.getElementById('explanation-text').textContent = question.explanation;
+      document.getElementById('explanation').classList.add('show');
+      document.getElementById('flip-btn').style.display = 'block';
+      
+      // 禁用提交按钮
+      document.getElementById('submit-btn').disabled = true;
+      
+      // 更新统计
+      updateStats();
+      
+      // 自动跳转到下一题（延迟2秒）
+      setTimeout(() => {
+        loadQuestion(questionIndex + 1);
+      }, 2500);
+    }
+
+    // 翻转卡片显示解析
+    function flipCard() {
+      const flipper = document.getElementById('flipper');
+      flipper.classList.toggle('flipped');
+    }
+
+    // 跳过题目
+    function skipQuestion() {
+      if (confirm('确定要跳过这道题吗？将不会获得积分。')) {
+        loadQuestion(questionIndex + 1);
+      }
+    }
+
+    // 计时器
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const seconds = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('timer').textContent = seconds;
+      }, 1000);
+    }
+
+    // 更新进度
+    function updateProgress() {
+      const progress = totalQuestions > 0 ? Math.round((questionIndex / totalQuestions) * 100) : 0;
+      document.getElementById('progress-fill').style.width = progress + '%';
+      document.getElementById('progress-text').textContent = progress + '%';
+      document.getElementById('remaining-count').textContent = Math.max(0, totalQuestions - questionIndex);
+      
+      // 更新正确率
+      const accuracy = questionIndex > 0 ? Math.round((correctAnswers / questionIndex) * 100) : 0;
+      document.getElementById('accuracy').textContent = accuracy + '%';
+    }
+
+    // 更新统计仪表板
+    function updateStats() {
+      const dashboard = document.getElementById('stats-dashboard');
+      if (questionIndex > 0) {
+        dashboard.style.display = 'block';
+        renderChart();
+      }
+    }
+
+    // 渲染 Chart.js 图表
+    function renderChart() {
+      const ctx = document.getElementById('progress-chart').getContext('2d');
+      
+      if (progressChart) {
+        progressChart.destroy();
+      }
+
+      progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['第1题', '第2题', '第3题', '第4题', '第5题'].slice(0, questionIndex + 1),
+          datasets: [{
+            label: '累计正确率',
+            data: [80, 75, 80, 85, 90].slice(0, questionIndex + 1), // 模拟数据
+            borderColor: '#4facfe',
+            backgroundColor: 'rgba(79, 172, 254, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: value => value + '%'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 任务完成
+    function showCompletion() {
+      clearInterval(timerInterval);
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+      const minutes = Math.floor(timeSpent / 60);
+      const seconds = timeSpent % 60;
+      const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+      const pointsEarned = Math.round((correctAnswers / totalQuestions) * currentTask.points_available);
+      
+      const content = `
+        <div style="text-align: center; padding: 20px;">
+          <h2 style="color: #4caf50; margin-bottom: 15px;">🎉 任务完成！</h2>
+          <p style="font-size: 16px; line-height: 1.8; color: #333;">
+            用时：${minutes}分${seconds}秒<br>
+            正确率：${accuracy}%<br>
+            获得积分：${pointsEarned}<br>
+            连续学习：${currentTask.streak + 1}天
+          </p>
+          <button class="btn btn-primary" onclick="window.close()" style="margin-top: 20px; width: 100%;">
+            完成
+          </button>
+        </div>
+      `;
+      
+      document.querySelector('.question-front').innerHTML = content;
+      document.querySelector('.question-back').innerHTML = '';
+      document.getElementById('flip-btn').style.display = 'none';
+      document.querySelector('.flipper').classList.remove('flipped');
+    }
+  </script>
+</body>
+</html>

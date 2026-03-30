@@ -1,0 +1,176 @@
+{
+  "dashboard": {
+    "title": "Gongkao 业务监控仪表板",
+    "tags": ["gongkao", "education", "ai"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "用户活跃度",
+        "type": "stat",
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "gongkao_active_users",
+            "legendFormat": "活跃用户数"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 2,
+        "title": "任务完成率",
+        "type": "stat",
+        "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "gongkao_task_completion_rate",
+            "legendFormat": "完成率"
+          }
+        ],
+        "options": {
+          "unit": "percentunit",
+          "colorMode": "red-yellow-green",
+          "thresholds": [
+            { "color": "red", "value": 0.5 },
+            { "color": "yellow", "value": 0.8 },
+            { "color": "green", "value": 0.9 }
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "title": "答题正确率",
+        "type": "timeseries",
+        "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "gongkao_answer_correctness_rate",
+            "legendFormat": "{{knowledge_point}}"
+          }
+        ],
+        "options": {
+          "unit": "percentunit",
+          "legendPosition": "bottom"
+        }
+      },
+      {
+        "id": 4,
+        "title": "HTTP 请求延迟 (P95)",
+        "type": "stat",
+        "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gongkao_http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P95"
+          }
+        ],
+        "options": {
+          "unit": "s",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 5,
+        "title": "HTTP 请求 QPS",
+        "type": "timeseries",
+        "gridPos": { "x": 12, "y": 4, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sum(rate(gongkao_http_requests_total[5m]))",
+            "legendFormat": "总请求数"
+          }
+        ],
+        "options": {
+          "unit": "reqps"
+        }
+      },
+      {
+        "id": 6,
+        "title": "AI 调用成功率",
+        "type": "stat",
+        "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sum(rate(gongkao_ai_calls_total{status=\"success\"}[5m])) / sum(rate(gongkao_ai_calls_total[5m]))",
+            "legendFormat": "成功率"
+          }
+        ],
+        "options": {
+          "unit": "percentunit",
+          "colorMode": "red-yellow-green",
+          "thresholds": [
+            { "color": "red", "value": 0.9 },
+            { "color": "yellow", "value": 0.95 },
+            { "color": "green", "value": 0.99 }
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "title": "知识点掌握情况",
+        "type": "bargauge",
+        "gridPos": { "x": 18, "y": 4, "w": 6, "h": 8 },
+        "targets": [
+          {
+            "expr": "gongkao_answer_correctness_rate",
+            "legendFormat": "{{knowledge_point}}"
+          }
+        ],
+        "options": {
+          "orientation": "auto",
+          "displayMode": "lcd",
+          "colorMode": "thresholds"
+        }
+      },
+      {
+        "id": 8,
+        "title": "系统资源使用",
+        "type": "timeseries",
+        "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "gongkao_node_memory_bytes{type=\"heap_used\"} / 1024 / 1024",
+            "legendFormat": "堆内存使用 (MB)"
+          },
+          {
+            "expr": "gongkao_node_memory_bytes{type=\"rss\"} / 1024 / 1024",
+            "legendFormat": "常驻集内存 (MB)"
+          }
+        ],
+        "options": {
+          "unit": "MB",
+          "legendPosition": "bottom"
+        }
+      },
+      {
+        "id": 9,
+        "title": "HTTP 错误率",
+        "type": "timeseries",
+        "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "sum(rate(gongkao_http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(gongkao_http_requests_total[5m]))",
+            "legendFormat": "5xx 错误率"
+          },
+          {
+            "expr": "sum(rate(gongkao_http_requests_total{status_code=~\"4..\"}[5m])) / sum(rate(gongkao_http_requests_total[5m]))",
+            "legendFormat": "4xx 错误率"
+          }
+        ],
+        "options": {
+          "unit": "percentunit",
+          "legendPosition": "bottom"
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  }
+}
