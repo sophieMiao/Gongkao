@@ -6,11 +6,16 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "jest",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:api": "jest tests/api.test.js",
     "lint": "eslint src/ --ext .js",
+    "lint:fix": "eslint src/ --ext .js --fix",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.js"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -1,0 +1,660 @@
+openapi: 3.0.3
+
+info:
+  title: Gongkao API
+  version: 1.0.0
+  description: 考公学习伴侣后端 API
+  contact:
+    name: Gongkao Team
+    email: support@gongkao.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.gongkao.com/api/v1
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      summary: 健康检查
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /auth/login:
+    post:
+      summary: 用户登录（飞书 OAuth）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: 飞书 OAuth code
+              required: [code]
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                      user:
+                        $ref: '#/components/schemas/User'
+
+  /auth/refresh:
+    post:
+      summary: 刷新 Token
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+
+  /auth/logout:
+    post:
+      summary: 退出登录
+      responses:
+        '200':
+          description: Logged out
+
+  /tasks/today:
+    get:
+      summary: 获取今日任务
+      responses:
+        '200':
+          description: Today's task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Task'
+
+        '404':
+          description: No task for today
+
+  /tasks/{taskId}/answer:
+    post:
+      summary: 提交答案
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question_id:
+                  type: string
+                user_answer:
+                  type: string
+                time_spent_seconds:
+                  type: integer
+              required: [question_id, user_answer, time_spent_seconds]
+      responses:
+        '200':
+          description: Answer submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      correct:
+                        type: boolean
+                      explanation:
+                        type: string
+                      points_earned:
+                        type: number
+
+  /tasks/{taskId}/skip:
+    post:
+      summary: 跳过题目
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Question skipped
+
+  /tasks/history:
+    get:
+      summary: 获取任务历史
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Task history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+  /users/profile:
+    get:
+      summary: 获取用户信息
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+
+    patch:
+      summary: 更新用户信息
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                avatar:
+                  type: string
+                department:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated
+
+  /users/preferences:
+    get:
+      summary: 获取用户偏好
+      responses:
+        '200':
+          description: User preferences
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Preference'
+
+    patch:
+      summary: 更新用户偏好
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preference'
+      responses:
+        '200':
+          description: Preferences updated
+
+  /stats/daily:
+    get:
+      summary: 获取今日进度
+      parameters:
+        - name: task_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Daily progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      correct:
+                        type: integer
+                      totalTime:
+                        type: integer
+                      accuracy:
+                        type: number
+                        format: float
+
+  /stats/knowledge:
+    get:
+      summary: 获取知识点掌握情况
+      responses:
+        '200':
+          description: Knowledge mastery
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    mastered:
+                      type: integer
+                    total:
+                      type: integer
+                    percentage:
+                      type: number
+                      format: float
+
+  /stats/time-distribution:
+    get:
+      summary: 获取学习时间分布
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month]
+            default: week
+      responses:
+        '200':
+          description: Time distribution
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    period:
+                      type: string
+                    minutes:
+                      type: integer
+
+  /stats/score-trend:
+    get:
+      summary: 获取分数趋势
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        '200':
+          description: Score trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                    score:
+                      type: integer
+
+  /sync/pending:
+    get:
+      summary: 获取待同步数据
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pending updates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+  /sync/push:
+    post:
+      summary: 推送同步数据
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Answer'
+                tasks:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Sync data received
+
+  /sync/ack:
+    post:
+      summary: 标记已同步
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sync_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Acknowledged
+
+  /upload/avatar:
+    post:
+      summary: 上传头像
+      security: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      avatar_url:
+                        type: string
+                      filename:
+                        type: string
+                      size:
+                        type: integer
+
+  /upload/file:
+    post:
+      summary: 上传文件
+      security: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      filename:
+                        type: string
+                      size:
+                        type: integer
+                      mimetype:
+                        type: string
+
+  /upload/batch:
+    post:
+      summary: 批量上传
+      security: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Files uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                        filename:
+                          type: string
+                        size:
+                          type: integer
+                        mimetype:
+                          type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        open_id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        department:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Preference:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        learning_style:
+          type: string
+          enum: [visual, auditory, kinesthetic, mixed]
+        daily_goal_minutes:
+          type: integer
+        reminder_enabled:
+          type: boolean
+        reminder_time:
+          type: string
+        timezone:
+          type: string
+        notification_channels:
+          type: array
+          items:
+            type: string
+        difficulty_adjustment:
+          type: string
+          enum: [auto, manual]
+        weekly_report_enabled:
+          type: boolean
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        day_number:
+          type: integer
+        knowledge_point:
+          type: string
+        estimated_minutes:
+          type: integer
+        points_available:
+          type: integer
+        streak:
+          type: integer
+        status:
+          type: string
+          enum: [pending, in_progress, completed, skipped]
+        created_at:
+          type: string
+          format: date-time
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        type:
+          type: string
+          enum: [choice, fill, essay]
+        options:
+          type: array
+          items:
+            type: string
+        correct_answer:
+          type: string
+        explanation:
+          type: string
+        knowledge_points:
+          type: array
+          items:
+            type: string
+        difficulty:
+          type: number
+          format: float
+
+    Answer:
+      type: object
+      properties:
+        id:
+          type: string
+        task_id:
+          type: string
+        question_id:
+          type: string
+        user_id:
+          type: string
+        user_answer:
+          type: string
+        is_correct:
+          type: boolean
+        time_spent_seconds:
+          type: integer
+        mood:
+          type: string
+        synced:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time

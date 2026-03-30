@@ -1,35 +1,49 @@
 version: '3.8'
 
 services:
-  kaogong-agent:
-    build: .
-    container_name: kaogong-agent
-    restart: unless-stopped
+  db:
+    image: postgres:15-alpine
+    container_name: gongkao-db
+    environment:
+      POSTGRES_USER: gongkao
+      POSTGRES_PASSWORD: gongkao123
+      POSTGRES_DB: gongkao
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/prisma:/app/prisma
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gongkao"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: gongkao-server
+    environment:
+      DATABASE_URL: "postgresql://gongkao:gongkao123@db:5432/gongkao"
+      JWT_SECRET: "your-super-secret-jwt-key-change-this"
+      PORT: 8080
+      NODE_ENV: production
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - ./server/uploads:/app/uploads
+      - ./server/prisma/migrations:/app/prisma/migrations
     ports:
       - "8080:8080"
-    environment:
-      - NODE_ENV=production
-      - STEPFUN_API_KEY=${STEPFUN_API_KEY}
-      - FEISHU_APP_ID=${FEISHU_APP_ID}
-      - FEISHU_APP_SECRET=${FEISHU_APP_SECRET}
-      - BITABLE_APP_TOKEN=${BITABLE_APP_TOKEN}
-      - USERS_TABLE_ID=${USERS_TABLE_ID}
-      - TASKS_TABLE_ID=${TASKS_TABLE_ID}
-      - PROGRESS_TABLE_ID=${PROGRESS_TABLE_ID}
-      - KNOWLEDGE_TABLE_ID=${KNOWLEDGE_TABLE_ID}
-      - OPENCLAW_GATEWAY_URL=${OPENCLAW_GATEWAY_URL:-http://localhost:8080}
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {if(r.statusCode!==200)throw new Error(r.statusCode)})"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health')"]
       interval: 30s
       timeout: 3s
       retries: 3
-      start_period: 10s
-    networks:
-      - kaogong-network
+    restart: unless-stopped
 
-networks:
-  kaogong-network:
-    driver: bridge
+volumes:
+  postgres_data:
