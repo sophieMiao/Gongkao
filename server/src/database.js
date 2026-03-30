@@ -1,12 +1,22 @@
 // 数据库访问层 (基于 Prisma)
 const { PrismaClient } = require('@prisma/client');
+const cache = require('./cache');
 
 const prisma = new PrismaClient();
 
 class Database {
   // 用户相关
   async getUser(id) {
-    return await prisma.user.findUnique({ where: { id } });
+    // 尝试从缓存获取
+    const cacheKey = `user:${id}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) return cached;
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (user) {
+      await cache.set(cacheKey, user, 300); // 缓存5分钟
+    }
+    return user;
   }
 
   async getUserByOpenId(openId) {
@@ -14,21 +24,30 @@ class Database {
   }
 
   async saveUser(user) {
-    return await prisma.user.upsert({
+    const result = await prisma.user.upsert({
       where: { id: user.id },
       create: user,
       update: user,
     });
+    // 清除缓存
+    await cache.del(`user:${user.id}`);
+    return result;
   }
 
   async updateUser(id, updates) {
-    return await prisma.user.update({ where: { id }, data: updates });
+    const result = await prisma.user.update({ where: { id }, data: updates });
+    await cache.del(`user:${id}`);
+    return result;
   }
 
   // 任务相关
   async getTodayTask(userId) {
+    const cacheKey = `today_task:${userId}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) return cached;
+
     const today = new Date().toISOString().split('T')[0];
-    return await prisma.task.findFirst({
+    const task = await prisma.task.findFirst({
       where: {
         user_id: userId,
         created_at: {
@@ -40,16 +59,27 @@ class Database {
       },
       orderBy: { created_at: 'desc' },
     });
+
+    if (task) {
+      await cache.set(cacheKey, task, 600); // 缓存10分钟
+    }
+    return task;
   }
 
   async createTask(task) {
-    return await prisma.task.create({ data: task });
+    const result = await prisma.task.create({ data: task });
+    // 清除该用户的今日任务缓存
+    await cache.del(`today_task:${task.user_id}`);
+    return result;
   }
 
   async updateTaskProgress(taskId, userId) {
     // 更新任务进度逻辑
     const task = await prisma.task.findUnique({ where: { id: taskId } });
     // ... 计算进度
+    // 清除缓存
+    await cache.del(`today_task:${userId}`);
+    await cache.del(`stats:${userId}`);
     return task;
   }
 
