@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // 或 "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  open_id   String   @unique
+  name      String
+  avatar    String?
+  department String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  tasks     Task[]
+  answers   Answer[]
+  preferences Preference?
+}
+
+model Preference {
+  id             String   @id @default(cuid())
+  user_id        String   @unique
+  user          User     @relation(fields: [user_id], references: [id])
+  
+  learning_style String? // visual, auditory, kinesthetic, mixed
+  daily_goal_minutes Int  @default(15)
+  reminder_enabled Boolean @default(true)
+  reminder_time   String? // "08:00"
+  timezone        String? @default("Asia/Shanghai")
+  notification_channels String[] @default(["feishu"])
+  difficulty_adjustment String? // auto, manual
+  weekly_report_enabled Boolean @default(true)
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Task {
+  id               String   @id @default(cuid())
+  user_id          String
+  user             User     @relation(fields: [user_id], references: [id])
+  
+  day_number       Int
+  knowledge_point  String
+  estimated_minutes Int
+  points_available Int
+  streak           Int
+  status           String @default("pending") // pending, in_progress, completed, skipped
+  
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  
+  questions        Question[]
+  answers          Answer[]
+}
+
+model Question {
+  id               String   @id @default(cuid())
+  content          String
+  type             String   // choice, fill, essay
+  options          String?  // JSON 字符串数组
+  correct_answer  String
+  explanation     String
+  knowledge_points String[] // 知识点标签
+  difficulty       Float    // 0-1
+  
+  source           String @default("bank") // bank, ai
+  created_at       DateTime @default(now())
+  
+  tasks Task[]
+  answers Answer[]
+}
+
+model Answer {
+  id                    String   @id @default(cuid())
+  task_id               String
+  task                  Task     @relation(fields: [task_id], references: [id])
+  
+  question_id           String
+  question              Question @relation(fields: [question_id], references: [id])
+  
+  user_id               String
+  user                  User     @relation(fields: [user_id], references: [id])
+  
+  user_answer           String
+  is_correct            Boolean
+  time_spent_seconds    Int
+  mood                  String?  // great, good, neutral, bad, terrible
+  
+  synced                Boolean @default(false)
+  sync_error            String?
+  
+  created_at            DateTime @default(now())
+}
+
+model SyncQueue {
+  id        Int      @id @default(autoincrement())
+  user_id   String
+  type      String   // "answer", "task", "user"
+  data      String   // JSON
+  retries   Int      @default(0)
+  created_at DateTime @default(now())
+  
+  @@index([user_id, created_at])
+}
